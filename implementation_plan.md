@@ -128,7 +128,7 @@ This document outlines the detailed implementation tasks for the Bond social mee
 - [x] Write unit tests for AuthRepository
 - [x] Write unit tests for AuthBloc
 - [x] Create widget tests for auth screens
-- [ ] Implement integration tests for auth flow
+- [x] Implement integration tests for auth flow
 
 ### Week 11-12: Basic Profile Feature
 
