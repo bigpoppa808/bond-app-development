@@ -45,20 +45,19 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB8J1Rxt-2MFhhbCGfaUYYpLk0qYoFkAHM',
-    appId: '1:1015240617580:android:4a7c3e2c7d6f4b3c8d9e0f',
-    messagingSenderId: '1015240617580',
+    apiKey: 'AIzaSyDJWxVqBJKVORqLySB7qWKNPjHFbirNUG4',
+    appId: '1:828310160649:android:99f6bd7d486e95e3bebfd8',
+    messagingSenderId: '828310160649',
     projectId: 'bond-dbc1d',
-    storageBucket: 'bond-dbc1d.appspot.com',
+    storageBucket: 'bond-dbc1d.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyC8J1Rxt-2MFhhbCGfaUYYpLk0qYoFkAHM',
-    appId: '1:1015240617580:ios:4a7c3e2c7d6f4b3c8d9e0f',
-    messagingSenderId: '1015240617580',
+    apiKey: 'AIzaSyAQQv16_SYX2Zyc653WIJMHyc2_l4Bkilc',
+    appId: '1:828310160649:ios:22764fbb9b171cc1bebfd8',
+    messagingSenderId: '828310160649',
     projectId: 'bond-dbc1d',
-    storageBucket: 'bond-dbc1d.appspot.com',
-    iosClientId: '1015240617580-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com',
+    storageBucket: 'bond-dbc1d.firebasestorage.app',
     iosBundleId: 'com.example.bondApp',
   );
 

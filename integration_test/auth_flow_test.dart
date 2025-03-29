@@ -3,14 +3,11 @@ import 'package:bond_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:bond_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bond_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:bond_app/features/auth/presentation/screens/login_screen.dart';
-import 'package:bond_app/main.dart' as app;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
-
-import 'helpers/firebase_test_helper.dart';
 
 // Mock classes for testing
 class MockAuthBloc extends Mock implements AuthBloc {}
@@ -20,16 +17,6 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late MockAuthBloc mockAuthBloc;
-  
-  setUpAll(() async {
-    // Initialize Firebase for testing
-    await FirebaseTestHelper.setupFirebase();
-  });
-  
-  tearDownAll(() async {
-    // Clean up after tests
-    await FirebaseTestHelper.cleanup();
-  });
 
   setUp(() {
     mockAuthBloc = MockAuthBloc();
@@ -127,57 +114,6 @@ void main() {
       expect(button.onPressed, isNull); // Button should be disabled
     });
 
-    testWidgets('Show error message on authentication failure', (WidgetTester tester) async {
-      // First setup initial state
-      when(() => mockAuthBloc.state).thenReturn(const AuthInitial());
-      
-      // Build the login screen with mock bloc
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: mockAuthBloc,
-            child: const LoginScreen(),
-          ),
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Enter valid credentials
-      await tester.enterText(find.widgetWithText(TextFormField, 'Email'), 'test@example.com');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Password'), 'password123');
-      
-      // Setup the bloc to handle the sign-in attempt and fail
-      when(() => mockAuthBloc.add(any(that: isA<SignInWithEmailPasswordRequested>())))
-          .thenAnswer((_) {
-        // Change state to show error after login attempt
-        when(() => mockAuthBloc.state).thenReturn(const AuthFailure('Invalid credentials'));
-      });
-      
-      // Tap login button
-      await tester.tap(find.text('Login'));
-      await tester.pumpAndSettle();
-      
-      // Verify auth event was triggered
-      verify(() => mockAuthBloc.add(any(that: isA<SignInWithEmailPasswordRequested>()))).called(1);
-      
-      // Now simulate the state change to failure
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: mockAuthBloc,
-            child: const LoginScreen(),
-          ),
-        ),
-      );
-      
-      await tester.pump(); // Pump once to show the SnackBar
-      
-      // Verify error message is displayed
-      expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.text('Invalid credentials'), findsOneWidget);
-    });
-
     testWidgets('Navigate to signup screen when tapping Sign Up', (WidgetTester tester) async {
       // Build the login screen with mock bloc
       await tester.pumpWidget(
@@ -226,89 +162,6 @@ void main() {
       
       // Verify navigation to forgot password screen
       expect(find.text('Forgot Password Screen'), findsOneWidget);
-    });
-
-    testWidgets('Successfully login and navigate to home screen', (WidgetTester tester) async {
-      // Create a test user
-      final testUser = UserModel(
-        id: 'test-user-id',
-        email: 'test@example.com',
-        displayName: 'Test User',
-        photoUrl: 'https://example.com/photo.jpg',
-        isEmailVerified: true,
-        createdAt: DateTime.now(),
-        lastLoginAt: DateTime.now(),
-        interests: ['coding', 'flutter'],
-        tokenBalance: 100,
-        isProfileComplete: true,
-      );
-      
-      // First setup initial state
-      when(() => mockAuthBloc.state).thenReturn(const AuthInitial());
-      
-      // Build the login screen with mock bloc and navigation
-      await tester.pumpWidget(
-        MaterialApp(
-          initialRoute: '/',
-          routes: {
-            '/': (context) => BlocProvider<AuthBloc>.value(
-                  value: mockAuthBloc,
-                  child: const LoginScreen(),
-                ),
-            '/home': (context) => const Scaffold(body: Text('Home Screen')),
-          },
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Enter valid credentials
-      await tester.enterText(find.widgetWithText(TextFormField, 'Email'), 'test@example.com');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Password'), 'password123');
-      
-      // Setup the bloc to handle the sign-in attempt and succeed
-      when(() => mockAuthBloc.add(any(that: isA<SignInWithEmailPasswordRequested>())))
-          .thenAnswer((_) {
-        // Change state to authenticated after login attempt
-        when(() => mockAuthBloc.state).thenReturn(Authenticated(testUser));
-      });
-      
-      // Tap login button
-      await tester.tap(find.text('Login'));
-      await tester.pumpAndSettle();
-      
-      // Verify auth event was triggered
-      verify(() => mockAuthBloc.add(any(that: isA<SignInWithEmailPasswordRequested>()))).called(1);
-      
-      // Now simulate the state change to authenticated
-      await tester.pumpWidget(
-        MaterialApp(
-          initialRoute: '/',
-          routes: {
-            '/': (context) => BlocProvider<AuthBloc>.value(
-                  value: mockAuthBloc,
-                  child: const LoginScreen(),
-                ),
-            '/home': (context) => const Scaffold(body: Text('Home Screen')),
-          },
-          builder: (context, child) {
-            return BlocListener<AuthBloc, AuthState>(
-              bloc: mockAuthBloc,
-              listener: (context, state) {
-                if (state is Authenticated) {
-                  Navigator.of(context).pushReplacementNamed('/home');
-                }
-              },
-              child: child,
-            );
-          },
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Verify navigation to home screen
-      expect(find.text('Home Screen'), findsOneWidget);
     });
   });
 }

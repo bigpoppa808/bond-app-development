@@ -3,15 +3,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bond_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:bond_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bond_app/features/auth/presentation/bloc/auth_state.dart';
+import 'package:bond_app/features/profile/domain/repositories/profile_repository.dart';
+import 'package:bond_app/features/profile/data/models/profile_model.dart';
 
 /// BLoC for managing authentication state
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
+  final ProfileRepository? _profileRepository;
   StreamSubscription<dynamic>? _authSubscription;
   
-  AuthBloc({required AuthRepository authRepository}) 
-      : _authRepository = authRepository,
-        super(const AuthInitial()) {
+  AuthBloc({
+    required AuthRepository authRepository, 
+    ProfileRepository? profileRepository,
+  }) : _authRepository = authRepository,
+       _profileRepository = profileRepository,
+       super(const AuthInitial()) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<SignInWithEmailPasswordRequested>(_onSignInWithEmailPasswordRequested);
     on<SignUpWithEmailPasswordRequested>(_onSignUpWithEmailPasswordRequested);
@@ -59,6 +65,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         event.password,
       );
       emit(Authenticated(user));
+      
+      // Check if user has a profile, if not create one
+      await _ensureUserHasProfile(user.uid);
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -78,6 +87,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         event.displayName,
       );
       emit(Authenticated(user));
+      
+      // Create a profile for the new user
+      await _createUserProfile(user.uid, user.displayName, user.email);
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -93,6 +105,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final user = await _authRepository.signInWithGoogle();
       emit(Authenticated(user));
+      
+      // Check if user has a profile, if not create one
+      await _ensureUserHasProfile(user.uid, user.displayName, user.email, user.photoUrl);
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -108,6 +123,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final user = await _authRepository.signInWithApple();
       emit(Authenticated(user));
+      
+      // Check if user has a profile, if not create one
+      await _ensureUserHasProfile(user.uid, user.displayName, user.email);
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -122,7 +140,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     
     try {
       await _authRepository.sendPasswordResetEmail(event.email);
-      emit(const PasswordResetSent());
+      emit(const PasswordResetEmailSent());
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -173,10 +191,66 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
+      // Get the user ID before deleting the account
+      final userId = (state as Authenticated).user.uid;
+      
+      // Delete the user's profile if profile repository is available
+      if (_profileRepository != null) {
+        await _profileRepository!.deleteProfile(userId);
+      }
+      
+      // Delete the user account
       await _authRepository.deleteAccount();
       emit(const AccountDeleted());
     } catch (e) {
       emit(AuthFailure(e.toString()));
+    }
+  }
+  
+  /// Ensure that a user has a profile, creating one if needed
+  Future<void> _ensureUserHasProfile(
+    String userId, [
+    String? displayName,
+    String? email,
+    String? photoUrl,
+  ]) async {
+    if (_profileRepository == null) return;
+    
+    try {
+      // Check if profile exists
+      final existingProfile = await _profileRepository!.getProfile(userId);
+      
+      if (existingProfile == null) {
+        // Create a new profile if none exists
+        await _createUserProfile(userId, displayName, email, photoUrl);
+      }
+    } catch (e) {
+      print('Error ensuring user profile: $e');
+    }
+  }
+  
+  /// Create a new user profile
+  Future<void> _createUserProfile(
+    String userId, [
+    String? displayName,
+    String? email,
+    String? photoUrl,
+  ]) async {
+    if (_profileRepository == null) return;
+    
+    try {
+      final newProfile = ProfileModel.create(userId: userId)
+          .copyWith(
+            displayName: displayName,
+            email: email,
+            photoUrl: photoUrl != null ? [photoUrl] : null,
+            isPublic: true,
+            lastUpdated: DateTime.now(),
+          );
+      
+      await _profileRepository!.createProfile(newProfile);
+    } catch (e) {
+      print('Error creating user profile: $e');
     }
   }
   

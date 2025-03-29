@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,10 @@ import 'package:bond_app/features/auth/presentation/screens/signup_screen.dart';
 import 'package:bond_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:bond_app/features/auth/presentation/screens/email_verification_screen.dart';
 import 'package:bond_app/features/home/presentation/screens/home_screen.dart';
+import 'package:bond_app/features/profile/presentation/screens/profile_screen.dart';
+import 'package:bond_app/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:bond_app/features/profile/presentation/bloc/profile_event.dart';
+import 'package:bond_app/features/splash/presentation/screens/splash_screen.dart';
 
 /// Router configuration for the Bond app
 class AppRouter {
@@ -51,15 +56,7 @@ class AppRouter {
             return '/login';
           }
 
-          // If the user is logged in but email is not verified, and not on verification page
-          if (isLoggedIn && 
-              currentState is Authenticated && 
-              !currentState.user.isEmailVerified && 
-              !isOnEmailVerificationPage) {
-            return '/email-verification';
-          }
-
-          // If the user is logged in and on an auth page, redirect to home
+          // If the user is logged in but on an auth page, redirect to home
           if (isLoggedIn && 
               (isOnLoginPage || 
                isOnSignupPage || 
@@ -67,17 +64,22 @@ class AppRouter {
             return '/home';
           }
 
-          // No redirection needed
+          // If the user is logged in and needs email verification
+          if (isLoggedIn && 
+              currentState is Authenticated && 
+              !currentState.user.isEmailVerified && 
+              !isOnEmailVerificationPage) {
+            return '/email-verification';
+          }
+
+          // Allow the user to proceed to their intended destination
           return null;
         },
         routes: [
-          // Splash screen route
           GoRoute(
             path: '/',
             builder: (context, state) => const SplashScreen(),
           ),
-          
-          // Auth routes
           GoRoute(
             path: '/login',
             builder: (context, state) => const LoginScreen(),
@@ -94,21 +96,23 @@ class AppRouter {
             path: '/email-verification',
             builder: (context, state) => const EmailVerificationScreen(),
           ),
-          
-          // Home route
           GoRoute(
             path: '/home',
             builder: (context, state) => const HomeScreen(),
           ),
-        ],
-        errorBuilder: (context, state) => Scaffold(
-          body: Center(
-            child: Text(
-              'Error: ${state.error}',
-              style: const TextStyle(color: Colors.red),
-            ),
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) {
+              final userId = state.queryParams['userId'] ?? 
+                (authBloc.state is Authenticated ? (authBloc.state as Authenticated).user.id : '');
+              
+              // Load the profile data when navigating to this route
+              context.read<ProfileBloc>().add(LoadProfile(userId));
+              
+              return const ProfileScreen();
+            },
           ),
-        ),
+        ],
       );
 }
 

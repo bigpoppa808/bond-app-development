@@ -24,6 +24,7 @@ dependencies:
   firebase_messaging: ^14.6.7
   firebase_crashlytics: ^3.3.5
   firebase_analytics: ^10.4.5
+  google_sign_in: ^6.1.5
   
   # Routing
   go_router: ^10.1.2
@@ -55,12 +56,10 @@ dependencies:
   nfc_manager: ^3.3.0
   
   # Payment
-  # Corrected package name and version
-  flutter_stripe: ^10.1.1 # Was stripe_flutter: ^3.0.0
+  flutter_stripe: ^10.1.1
   
   # Network
-  # Downgraded to resolve algolia conflict
-  http: ^0.13.6 # Was ^1.1.0
+  http: ^0.13.6
   dio: ^5.3.2
   connectivity_plus: ^4.0.2
   
@@ -73,19 +72,21 @@ dependencies:
   device_info_plus: ^9.0.3
   permission_handler: ^10.4.3
   convert: ^3.1.1
+  sign_in_with_apple: ^6.1.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.3
   bloc_test: ^9.1.4
-  mockito: ^5.4.2
-  build_runner: ^2.4.6
+  mockito: ^5.4.4
+  build_runner: ^2.4.0
   hive_generator: ^2.0.1
   json_serializable: ^6.7.1
   flutter_launcher_icons: ^0.13.1
   integration_test:
     sdk: flutter
+  mocktail: ^1.0.0
 
 flutter:
   uses-material-design: true

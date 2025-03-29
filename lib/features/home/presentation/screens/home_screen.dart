@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:bond_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:bond_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bond_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:bond_app/core/theme/app_theme.dart';
+import 'package:bond_app/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:bond_app/features/profile/presentation/bloc/profile_event.dart';
 
 /// Home screen for the Bond app
 class HomeScreen extends StatelessWidget {
@@ -19,7 +22,15 @@ class HomeScreen extends StatelessWidget {
               title: const Text('Bond'),
               actions: [
                 IconButton(
+                  icon: const Icon(Icons.person),
+                  tooltip: 'Profile',
+                  onPressed: () {
+                    context.go('/profile');
+                  },
+                ),
+                IconButton(
                   icon: const Icon(Icons.logout),
+                  tooltip: 'Logout',
                   onPressed: () {
                     context.read<AuthBloc>().add(const SignOutRequested());
                   },
@@ -93,6 +104,19 @@ class HomeScreen extends StatelessWidget {
                                       Text(
                                         state.user.email,
                                         style: Theme.of(context).textTheme.bodyMedium,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      ElevatedButton.icon(
+                                        icon: const Icon(Icons.edit),
+                                        label: const Text('Edit Profile'),
+                                        onPressed: () {
+                                          context.go('/profile');
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppTheme.primaryColor,
+                                          foregroundColor: Colors.white,
+                                          textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                                        ),
                                       ),
                                       const SizedBox(height: 8),
                                       Row(

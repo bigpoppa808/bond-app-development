@@ -144,11 +144,38 @@ This document outlines the detailed implementation tasks for the Bond social mee
 - [x] Create profile BLoC with events and states
 - [x] Design basic profile screen UI
 - [x] Implement profile photo management
-- [ ] Add profile editing functionality
-- [ ] Implement profile photo upload to Firebase Storage
-- [ ] Create profile completion flow for new users
+- [x] Add profile editing functionality
+- [x] Implement profile photo upload to Firebase Storage
+- [x] Create profile completion flow for new users
+- [x] Integrate profile feature with authentication flow
+- [x] Ensure profiles are created upon sign-up or sign-in
+- [x] Update navigation to include profile screen
 - [ ] Add profile privacy settings
 - [ ] Implement profile search functionality
+
+#### Testing and Refinement
+- [x] Write unit tests for ProfileRepository
+- [x] Write unit tests for ProfileBloc
+- [x] Create integration tests for profile and auth interaction
+- [ ] Add widget tests for profile screens
+- [ ] Test profile photo upload functionality
+- [ ] Verify form validation in profile editing
+- [ ] Test profile completion workflow
+- [ ] Create end-to-end tests for the entire profile feature
+
+### Week 13-14: Location and Matching Foundation
+- [ ] Set up location permissions handling
+- [ ] Implement Geolocator service
+- [ ] Create location tracking manager
+- [ ] Build geofencing utilities
+- [ ] Implement location caching
+
+#### Algolia Setup
+- [x] Configure Algolia with provided credentials (App ID: 7ZNGJXM461)
+- [ ] Create initial index structure
+- [ ] Implement Algolia service wrapper
+- [ ] Set up Cloud Functions for Algolia indexing
+- [ ] Create geospatial search utilities
 
 ## Phase 2: Discovery, Connections & Basic Meetings (2 Months)
 

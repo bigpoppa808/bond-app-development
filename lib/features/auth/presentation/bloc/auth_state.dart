@@ -45,8 +45,8 @@ class AuthFailure extends AuthState {
 }
 
 /// State when a password reset email is sent
-class PasswordResetSent extends AuthState {
-  const PasswordResetSent();
+class PasswordResetEmailSent extends AuthState {
+  const PasswordResetEmailSent();
 }
 
 /// State when email verification is sent
