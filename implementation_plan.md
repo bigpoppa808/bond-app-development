@@ -137,27 +137,18 @@ This document outlines the detailed implementation tasks for the Bond social mee
 
 ### Week 11-12: Basic Profile Feature
 
-#### Data Layer
-- [ ] Extend User model with profile fields
-- [ ] Create ProfileRepository
-- [ ] Implement Firestore profile data source
-- [ ] Set up profile image storage in Firebase Storage
-
-#### Business Logic
-- [ ] Create ProfileBloc with events and states
-- [ ] Implement profile fetch logic
-- [ ] Create profile update logic
-- [ ] Implement image upload logic
-
-#### UI Layer
-- [ ] Build profile view screen
-- [ ] Create profile edit screen
-- [ ] Implement image picker and cropper
-- [ ] Build form validation for profile fields
-
-#### Testing
-- [ ] Write unit tests for ProfileRepository
-- [ ] Create widget tests for profile screens
+#### Tasks
+- [x] Design profile data model
+- [x] Create profile repository interface
+- [x] Implement Firebase profile repository
+- [x] Create profile BLoC with events and states
+- [x] Design basic profile screen UI
+- [x] Implement profile photo management
+- [ ] Add profile editing functionality
+- [ ] Implement profile photo upload to Firebase Storage
+- [ ] Create profile completion flow for new users
+- [ ] Add profile privacy settings
+- [ ] Implement profile search functionality
 
 ## Phase 2: Discovery, Connections & Basic Meetings (2 Months)
 
