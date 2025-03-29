@@ -129,6 +129,11 @@ This document outlines the detailed implementation tasks for the Bond social mee
 - [x] Write unit tests for AuthBloc
 - [x] Create widget tests for auth screens
 - [x] Implement integration tests for auth flow
+- [x] Add Firebase authentication unit tests with mock implementations
+- [x] Create widget tests with Firebase authentication integration
+- [x] Test login form validation and error handling
+- [x] Add Google Sign-In tests for AuthBloc
+- [x] Implement widget tests for social login buttons
 
 ### Week 11-12: Basic Profile Feature
 
