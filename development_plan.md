@@ -414,7 +414,82 @@ classDiagram
 *   **Code Reviews:** Implement mandatory peer code reviews for all significant changes via Pull Requests.
 *   **Design Reviews:** Ensure UI implementation matches wireframes and guidelines periodically.
 
-## 14. Related Documentation
+## 12. Required Accounts and Credentials
+
+The Bond app requires several third-party services and platforms. The following accounts need to be set up before development begins:
+
+### Firebase
+- **Firebase Project**: Create a new Firebase project for the Bond app
+- **Authentication**: Enable Email/Password, Google, and Apple Sign-In methods
+- **Firestore Database**: Set up with proper security rules for user data
+- **Cloud Storage**: For profile pictures and other media
+- **Cloud Functions**: For backend processing (token awards, notifications)
+- **Firebase Hosting**: For hosting web version (optional)
+- **Credentials Needed**: 
+  - Firebase configuration file (google-services.json for Android, GoogleService-Info.plist for iOS)
+  - Web API key
+  - Admin SDK private key (for server-side operations)
+
+### Google Cloud Platform
+- **Google Maps Platform**: For location services and maps display
+- **Google Play Developer Account**: For publishing Android app
+- **Credentials Needed**:
+  - Google Maps API key (restricted to app usage)
+  - Google Cloud service account with appropriate permissions
+  - SHA-1 fingerprint of app signing certificate
+
+### Apple Developer Program
+- **Apple Developer Account**: Required for iOS app distribution
+- **App Store Connect**: For publishing iOS app
+- **Credentials Needed**:
+  - Apple Developer Program membership
+  - App-specific certificates and provisioning profiles
+  - Apple Sign-In configuration
+
+### Algolia
+- **Algolia Account**: For advanced search functionality
+- **Credentials Needed**:
+  - Application ID
+  - Search-only API key (client-side)
+  - Admin API key (server-side only)
+
+### Stripe
+- **Stripe Account**: For processing donor subscriptions
+- **Credentials Needed**:
+  - Publishable key (client-side)
+  - Secret key (server-side only)
+  - Webhook signing secret
+
+### Push Notification Services
+- **Firebase Cloud Messaging**: Already covered in Firebase setup
+- **Apple Push Notification Service (APNs)**: For iOS push notifications
+- **Credentials Needed**:
+  - APNs authentication key or certificate
+
+### Analytics
+- **Firebase Analytics**: Already covered in Firebase setup
+- **Optional Additional Analytics**: Google Analytics, Mixpanel, etc.
+- **Credentials Needed**:
+  - Tracking IDs or API keys for any additional analytics services
+
+### Error Reporting
+- **Firebase Crashlytics**: For crash reporting
+- **Credentials Needed**: Already covered in Firebase setup
+
+### Source Control
+- **GitHub Account**: For code repository hosting
+- **Credentials Needed**:
+  - Repository access credentials
+  - Deploy keys if using CI/CD
+
+### Continuous Integration/Deployment
+- **GitHub Actions**: For automated testing and deployment
+- **Credentials Needed**:
+  - Repository secrets for API keys and service accounts
+
+All credentials should be stored securely and never committed to the repository. Use environment variables, secure key management services, or Flutter's key obfuscation techniques where appropriate.
+
+## 13. Related Documentation
 
 The following related documentation is available in the `docs` directory:
 
@@ -424,7 +499,7 @@ The following related documentation is available in the `docs` directory:
 - [Backend Structure](docs/bond-backend-structure-doc.md) - Database schema and backend architecture
 - [Frontend Guidelines](docs/bond-frontend-guidelines.md) - UI/UX standards and component guidelines
 
-## 15. Wireframes
+## 14. Wireframes
 
 Reference wireframes for key screens are available in the `wireframes` directory:
 
