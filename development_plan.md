@@ -414,4 +414,27 @@ classDiagram
 *   **Code Reviews:** Implement mandatory peer code reviews for all significant changes via Pull Requests.
 *   **Design Reviews:** Ensure UI implementation matches wireframes and guidelines periodically.
 
+## 14. Related Documentation
+
+The following related documentation is available in the `docs` directory:
+
+- [Project Requirements](docs/bond-project-requirements.md) - Detailed business goals and functional requirements
+- [App Flow Documentation](docs/bond-app-flow-doc.md) - User journey and screen transitions
+- [Technology Stack](docs/bond-tech-stack-doc.md) - Comprehensive technology stack information
+- [Backend Structure](docs/bond-backend-structure-doc.md) - Database schema and backend architecture
+- [Frontend Guidelines](docs/bond-frontend-guidelines.md) - UI/UX standards and component guidelines
+
+## 15. Wireframes
+
+Reference wireframes for key screens are available in the `wireframes` directory:
+
+1. Home/Events Screen
+2. See & Meet Compatibility Screen
+3. Connection Flow
+4. NFC Verification Process
+5. User Profile Management
+6. Other User Profiles
+
+These wireframes provide visual guidance for the implementation of the UI components.
+
 This plan provides a roadmap for the Bond app development. Flexibility will be required to adapt to challenges and new information as the project progresses.

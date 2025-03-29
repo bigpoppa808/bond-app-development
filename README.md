@@ -82,15 +82,23 @@ The development plan is divided into five phases:
 
 ## Documentation
 
-For detailed information, refer to the [Development Plan](development_plan.md) which includes:
+For detailed information, refer to the following documentation:
 
-- Technical architecture
-- Folder structure
-- Data models
-- Implementation phases
-- Technical considerations
-- Risk management
-- Project assumptions
+- [Development Plan](development_plan.md) - Implementation details and timeline
+- [Project Requirements](docs/bond-project-requirements.md) - Business goals and functional requirements
+- [App Flow](docs/bond-app-flow-doc.md) - User journeys and screen transitions
+- [Tech Stack](docs/bond-tech-stack-doc.md) - Technologies and frameworks
+- [Backend Structure](docs/bond-backend-structure-doc.md) - Firebase setup and database design
+- [Frontend Guidelines](docs/bond-frontend-guidelines.md) - UI/UX principles and component guides
+
+## Wireframes
+
+The `wireframes` directory contains React component wireframes for key screens:
+- Home/Events Screen
+- See & Meet Screen
+- Connection Flow
+- NFC Verification
+- User Profiles
 
 ## License
 
