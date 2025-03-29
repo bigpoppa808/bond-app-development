@@ -172,5 +172,44 @@ void main() {
         ]),
       );
     });
+
+    test('emits AuthInProgress and Authenticated when SignInWithGoogleRequested is successful', () async {
+      // Arrange
+      final mockUser = MockUserModel();
+      when(() => mockAuthRepository.signInWithGoogle())
+          .thenAnswer((_) async => mockUser);
+      
+      // Act
+      authBloc.add(const SignInWithGoogleRequested());
+      
+      // Assert
+      await expectLater(
+        authBloc.stream,
+        emitsInOrder([
+          const AuthInProgress(),
+          Authenticated(mockUser),
+        ]),
+      );
+    });
+
+    test('emits AuthInProgress and AuthFailure when SignInWithGoogleRequested fails', () async {
+      // Arrange
+      when(() => mockAuthRepository.signInWithGoogle())
+          .thenThrow(Exception('Google sign in failed'));
+      
+      // Act
+      authBloc.add(const SignInWithGoogleRequested());
+      
+      // Assert
+      await expectLater(
+        authBloc.stream,
+        emitsInOrder([
+          const AuthInProgress(),
+          predicate<AuthState>((state) => 
+            state is AuthFailure && state.message.contains('Google sign in failed')
+          ),
+        ]),
+      );
+    });
   });
 }

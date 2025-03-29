@@ -1,7 +1,9 @@
 import 'package:bond_app/features/auth/data/models/user_model.dart';
 import 'package:bond_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:bond_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:bond_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bond_app/features/auth/presentation/screens/login_screen.dart';
+import 'package:bond_app/features/auth/presentation/widgets/social_login_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -119,6 +121,36 @@ void main() {
       
       // Assert - verify the auth repository was called with correct parameters
       verify(() => mockAuthRepository.signInWithEmailAndPassword('test@example.com', 'password123')).called(1);
+    });
+
+    testWidgets('tapping Google Sign-In button triggers Google sign-in', (WidgetTester tester) async {
+      // Arrange
+      final mockUser = MockUserModel();
+      when(() => mockAuthRepository.signInWithGoogle())
+          .thenAnswer((_) async => mockUser);
+      
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<AuthBloc>(
+            create: (context) => AuthBloc(authRepository: mockAuthRepository),
+            child: const LoginScreen(),
+          ),
+        ),
+      );
+      
+      // Find the social login button
+      final googleButtonFinder = find.byType(SocialLoginButton).first;
+      
+      // Scroll until the button is visible
+      await tester.ensureVisible(googleButtonFinder);
+      await tester.pumpAndSettle();
+      
+      // Act - tap the Google sign-in button
+      await tester.tap(googleButtonFinder);
+      await tester.pumpAndSettle();
+      
+      // Assert - verify the auth repository was called for Google sign-in
+      verify(() => mockAuthRepository.signInWithGoogle()).called(1);
     });
   });
 }
