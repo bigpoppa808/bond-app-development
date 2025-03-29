@@ -17,36 +17,36 @@ A layered architecture using the BLoC pattern will be implemented for clear sepa
 
 ```mermaid
 graph TD
-    A[Bond App] --> B[Presentation Layer (UI)]
-    A --> C[Business Logic Layer (BLoC)]
-    A --> D[Data Layer (Repositories & Data Sources)]
+    A[Bond App] --> B[Presentation Layer UI]
+    A --> C[Business Logic Layer BLoC]
+    A --> D[Data Layer Repositories & Data Sources]
     A --> E[Core/Common Layer]
-    A --> F[Service Layer (External Integrations)]
+    A --> F[Service Layer External Integrations]
 
-    B --> B1[Screens (Pages)]
-    B --> B2[Widgets (Reusable UI Components)]
-    B --> B3[Navigation (GoRouter)]
-    B --> B4[Theme (Material 3)]
+    B --> B1[Screens Pages]
+    B --> B2[Widgets Reusable UI Components]
+    B --> B3[Navigation GoRouter]
+    B --> B4[Theme Material 3]
 
-    C --> C1[Blocs/Cubits (State Management)]
+    C --> C1[Blocs/Cubits State Management]
     C --> C2[Events & States]
 
-    D --> D1[Repositories (Abstract Data Operations)]
-    D --> D2[Data Sources (Local/Remote - Firebase, Hive)]
-    D --> D3[Models (Data Structures)]
+    D --> D1[Repositories Abstract Data Operations]
+    D --> D2[Data Sources Local/Remote - Firebase, Hive]
+    D --> D3[Models Data Structures]
 
-    E --> E1[Utils (Helper Functions)]
-    E --> E2[Constants (App-wide constants)]
+    E --> E1[Utils Helper Functions]
+    E --> E2[Constants App-wide constants]
     E --> E3[Extensions]
     E --> E4[Error Handling]
     E --> E5[Analytics Abstraction]
 
-    F --> F1[Firebase Service (Wrapper)]
-    F --> F2[Algolia Service (Search)]
-    F --> F3[NFC Service (Verification)]
-    F --> F4[Location Service (Geo)]
-    F --> F5[Payment Service (Stripe)]
-    F --> F6[Notification Service (FCM)]
+    F --> F1[Firebase Service Wrapper]
+    F --> F2[Algolia Service Search]
+    F --> F3[NFC Service Verification]
+    F --> F4[Location Service Geo]
+    F --> F5[Payment Service Stripe]
+    F --> F6[Notification Service FCM]
 ```
 
 ## 3. Folder Structure
@@ -61,10 +61,10 @@ graph TD
     Root --> Services[services]
 
     App --> AppMain[main.dart]
-    App --> AppWidget[app.dart (Root Widget)]
-    App --> Router[router/ (GoRouter setup)]
-    App --> Theme[theme/ (Theme definitions)]
-    App --> Config[config/ (Environment config)]
+    App --> AppWidget[app.dart Root Widget]
+    App --> Router[router GoRouter setup]
+    App --> Theme[theme Theme definitions]
+    App --> Config[config Environment config]
 
     Features --> Auth[auth]
     Features --> Profile[profile]
@@ -76,26 +76,25 @@ graph TD
     Features --> Donor[donor]
     Features --> Settings[settings]
 
-    %% Feature Substructure Example (e.g., auth)
-    Auth --> AuthBloc[bloc/ (auth_bloc.dart, auth_state.dart, auth_event.dart)]
-    Auth --> AuthData[data/ (auth_repository.dart, auth_remote_datasource.dart)]
-    Auth --> AuthModels[models/ (user_model.dart)]
-    Auth --> AuthScreens[presentation/screens/ (login_screen.dart, signup_screen.dart)]
-    Auth --> AuthWidgets[presentation/widgets/ (login_form.dart)]
+    Auth --> AuthBloc[bloc auth_bloc.dart]
+    Auth --> AuthData[data auth_repository.dart]
+    Auth --> AuthModels[models user_model.dart]
+    Auth --> AuthScreens[presentation/screens]
+    Auth --> AuthWidgets[presentation/widgets]
 
-    Core --> CommonWidgets[widgets/ (buttons, cards, inputs)]
-    Core --> Utils[utils/ (validators.dart, date_time.dart)]
-    Core --> ErrorHandler[error/ (exceptions.dart, error_handler.dart)]
-    Core --> DI[di/ (dependency_injection.dart - using get_it)]
-    Core --> Models[models/ (shared data models)]
-    Core --> Analytics[analytics/ (analytics_interface.dart)]
+    Core --> CommonWidgets[widgets buttons, cards, inputs]
+    Core --> Utils[utils validators.dart]
+    Core --> ErrorHandler[error exceptions.dart]
+    Core --> DI[di dependency_injection.dart]
+    Core --> Models[models shared data models]
+    Core --> Analytics[analytics analytics_interface.dart]
 
-    Services --> FirebaseSvc[firebase/ (auth_service.dart, firestore_service.dart)]
-    Services --> LocationSvc[location/ (location_service.dart - using geolocator)]
-    Services --> NFCSvc[nfc/ (nfc_service.dart - using nfc_manager)]
-    Services --> NotificationSvc[notifications/ (notification_service.dart - using firebase_messaging)]
-    Services --> AlgoliaSvc[algolia/ (search_service.dart)]
-    Services --> PaymentSvc[payment/ (stripe_service.dart)]
+    Services --> FirebaseSvc[firebase auth_service.dart]
+    Services --> LocationSvc[location location_service.dart]
+    Services --> NFCSvc[nfc nfc_service.dart]
+    Services --> NotificationSvc[notifications notification_service.dart]
+    Services --> AlgoliaSvc[algolia search_service.dart]
+    Services --> PaymentSvc[payment stripe_service.dart]
 ```
 
 **Detailed Folder Organization:**
@@ -154,10 +153,10 @@ classDiagram
       +String profileImageUrl
       +String bio
       +GeoPoint location
-      +List~String~ interestIds
+      +List interestIds
       +AvailabilitySchedule availability
       +AvailabilityStatus status
-      +DonorInfo? donorInfo
+      +DonorInfo donorInfo
       +int tokenBalance
       +UserStats stats
       +Timestamp createdAt
@@ -171,14 +170,12 @@ classDiagram
     }
 
     class AvailabilitySchedule {
-      +Map~String, List~TimeRange~~ dailySlots # e.g., {"Monday": [TimeRange(start: 9:00, end: 17:00)]}
+      +Map dailySlots
     }
-
-    enum AvailabilityStatus { available_now, available_later, unavailable }
 
     class Connection {
       +String id
-      +List~String~ userIds
+      +List userIds
       +ConnectionStatus status
       +String initiatorId
       +double compatibilityScore
@@ -186,23 +183,19 @@ classDiagram
       +Timestamp lastMessageAt
     }
 
-    enum ConnectionStatus { pending, accepted, declined, blocked }
-
     class Meeting {
       +String id
       +String connectionId
-      +List~String~ participantIds
+      +List participantIds
       +String activityType
       +MeetingLocation location
       +Timestamp scheduledTime
       +Duration duration
       +MeetingStatus status
-      +Map~String, Timestamp~ nfcVerifications # {userId: timestamp}
+      +Map nfcVerifications
       +int tokensAwarded
       +Timestamp createdAt
     }
-
-    enum MeetingStatus { requested, scheduled, completed, cancelled, verified }
 
     class Message {
       +String id
@@ -210,12 +203,10 @@ classDiagram
       +String senderId
       +String textContent
       +MessageType type
-      +MeetingSuggestion? meetingSuggestionData
+      +MeetingSuggestion meetingSuggestionData
       +Timestamp createdAt
       +bool isRead
     }
-
-    enum MessageType { text, meeting_suggestion, system }
 
     class TokenTransaction {
       +String id
@@ -223,33 +214,28 @@ classDiagram
       +TransactionType type
       +int amount
       +String description
-      +String? relatedMeetingId
-      +String? relatedUserId
+      +String relatedMeetingId
+      +String relatedUserId
       +Timestamp createdAt
     }
-
-    enum TransactionType { meeting_verified, donor_bonus, feature_unlock, manual_adjustment }
 
     class DonorSubscription {
       +String id
       +String userId
       +DonorTier tier
       +SubscriptionStatus status
-      +String paymentProviderId # Stripe Subscription ID
+      +String paymentProviderId
       +Timestamp startDate
       +Timestamp endDate
       +Timestamp nextRenewalDate
       +Timestamp createdAt
     }
 
-    enum DonorTier { silver, gold, platinum }
-    enum SubscriptionStatus { active, cancelled, expired, payment_failed }
-
     User "1" -- "*" Interest : selects
     User "1" -- "1" AvailabilitySchedule
     User "2" -- "1" Connection
     User "1" -- "*" TokenTransaction
-    User "1" -- "1..*" DonorSubscription
+    User "1" -- "1" DonorSubscription
     Connection "1" -- "*" Meeting
     Connection "1" -- "*" Message
     Meeting "1" -- "*" TokenTransaction : triggers
