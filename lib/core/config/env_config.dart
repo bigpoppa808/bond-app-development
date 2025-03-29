@@ -5,7 +5,20 @@ import 'package:flutter/foundation.dart';
 /// A class to manage environment variables and credentials securely
 class EnvConfig {
   static Future<void> initialize() async {
-    await dotenv.load(fileName: 'credentials/.env');
+    try {
+      // Try to load from credentials/.env first
+      await dotenv.load(fileName: 'credentials/.env');
+      debugPrint('Loaded environment variables from credentials/.env');
+    } catch (e) {
+      try {
+        // If that fails, try to load from .env in the root directory
+        await dotenv.load(fileName: '.env');
+        debugPrint('Loaded environment variables from .env');
+      } catch (e) {
+        debugPrint('Failed to load environment variables: $e');
+        debugPrint('Using default values for environment variables');
+      }
+    }
   }
 
   // Firebase credentials
@@ -20,7 +33,7 @@ class EnvConfig {
       dotenv.env['ALGOLIA_APP_ID'] ?? '7ZNGJXM461';
   
   static String get algoliaApiKey => 
-      dotenv.env['ALGOLIA_API_KEY'] ?? '';
+      dotenv.env['ALGOLIA_API_KEY'] ?? '9a047cb26d9fca07bef2f4f11a64129a';
   
   static String get algoliaIndexName => 
       dotenv.env['ALGOLIA_INDEX_NAME'] ?? 'bond_users';

@@ -2,6 +2,114 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:bond_app/features/auth/data/models/user_model.dart';
 
+/// Enum for different privacy levels
+enum PrivacyLevel {
+  /// Visible to everyone
+  public,
+  
+  /// Visible only to connections
+  connectionsOnly,
+  
+  /// Visible only to the user
+  private,
+}
+
+/// Model for user profile privacy settings
+class ProfilePrivacySettings extends Equatable {
+  /// Whether the profile is discoverable in search
+  final bool discoverable;
+  
+  /// Privacy level for the user's contact information
+  final PrivacyLevel contactInfoPrivacy;
+  
+  /// Privacy level for the user's interests
+  final PrivacyLevel interestsPrivacy;
+  
+  /// Privacy level for the user's photos
+  final PrivacyLevel photosPrivacy;
+  
+  /// Whether to show online status
+  final bool showOnlineStatus;
+  
+  /// Whether to show location
+  final bool showLocation;
+
+  /// Constructor
+  const ProfilePrivacySettings({
+    this.discoverable = true,
+    this.contactInfoPrivacy = PrivacyLevel.connectionsOnly,
+    this.interestsPrivacy = PrivacyLevel.public,
+    this.photosPrivacy = PrivacyLevel.public,
+    this.showOnlineStatus = true,
+    this.showLocation = true,
+  });
+
+  /// Factory constructor for creating a ProfilePrivacySettings from a Map
+  factory ProfilePrivacySettings.fromMap(Map<String, dynamic> map) {
+    return ProfilePrivacySettings(
+      discoverable: map['discoverable'] ?? true,
+      contactInfoPrivacy: PrivacyLevel.values.firstWhere(
+        (e) => e.toString() == map['contactInfoPrivacy'],
+        orElse: () => PrivacyLevel.connectionsOnly,
+      ),
+      interestsPrivacy: PrivacyLevel.values.firstWhere(
+        (e) => e.toString() == map['interestsPrivacy'],
+        orElse: () => PrivacyLevel.public,
+      ),
+      photosPrivacy: PrivacyLevel.values.firstWhere(
+        (e) => e.toString() == map['photosPrivacy'],
+        orElse: () => PrivacyLevel.public,
+      ),
+      showOnlineStatus: map['showOnlineStatus'] ?? true,
+      showLocation: map['showLocation'] ?? true,
+    );
+  }
+
+  /// Convert to Map
+  Map<String, dynamic> toMap() {
+    return {
+      'discoverable': discoverable,
+      'contactInfoPrivacy': contactInfoPrivacy.toString(),
+      'interestsPrivacy': interestsPrivacy.toString(),
+      'photosPrivacy': photosPrivacy.toString(),
+      'showOnlineStatus': showOnlineStatus,
+      'showLocation': showLocation,
+    };
+  }
+
+  /// Create a copy of this ProfilePrivacySettings with given fields replaced with new values
+  ProfilePrivacySettings copyWith({
+    bool? discoverable,
+    PrivacyLevel? contactInfoPrivacy,
+    PrivacyLevel? interestsPrivacy,
+    PrivacyLevel? photosPrivacy,
+    bool? showOnlineStatus,
+    bool? showLocation,
+  }) {
+    return ProfilePrivacySettings(
+      discoverable: discoverable ?? this.discoverable,
+      contactInfoPrivacy: contactInfoPrivacy ?? this.contactInfoPrivacy,
+      interestsPrivacy: interestsPrivacy ?? this.interestsPrivacy,
+      photosPrivacy: photosPrivacy ?? this.photosPrivacy,
+      showOnlineStatus: showOnlineStatus ?? this.showOnlineStatus,
+      showLocation: showLocation ?? this.showLocation,
+    );
+  }
+
+  /// Default privacy settings
+  static ProfilePrivacySettings get defaults => const ProfilePrivacySettings();
+
+  @override
+  List<Object?> get props => [
+        discoverable,
+        contactInfoPrivacy,
+        interestsPrivacy,
+        photosPrivacy,
+        showOnlineStatus,
+        showLocation,
+      ];
+}
+
 /// Profile model extending user information for the Bond app
 class ProfileModel extends Equatable {
   final String userId;
@@ -18,7 +126,12 @@ class ProfileModel extends Equatable {
   final List<String> personalityTraits;
   final Map<String, dynamic> preferences;
   final bool isPublic;
+  final ProfilePrivacySettings privacySettings;
   final DateTime lastUpdated;
+  final double? latitude;
+  final double? longitude;
+  final bool isLocationTrackingEnabled;
+  final DateTime? lastLocationUpdate;
 
   const ProfileModel({
     required this.userId,
@@ -35,7 +148,12 @@ class ProfileModel extends Equatable {
     this.personalityTraits = const [],
     this.preferences = const {},
     this.isPublic = true,
+    this.privacySettings = const ProfilePrivacySettings(),
     required this.lastUpdated,
+    this.latitude,
+    this.longitude,
+    this.isLocationTrackingEnabled = true,
+    this.lastLocationUpdate,
   });
 
   /// Create a new profile with default values
@@ -50,7 +168,10 @@ class ProfileModel extends Equatable {
       photos: const [],
       personalityTraits: const [],
       preferences: const {},
+      isPublic: true,
+      privacySettings: const ProfilePrivacySettings(),
       lastUpdated: DateTime.now(),
+      isLocationTrackingEnabled: true,
     );
   }
 
@@ -77,7 +198,14 @@ class ProfileModel extends Equatable {
       personalityTraits: List<String>.from(data['personalityTraits'] ?? []),
       preferences: Map<String, dynamic>.from(data['preferences'] ?? {}),
       isPublic: data['isPublic'] as bool? ?? true,
+      privacySettings: data['privacySettings'] != null
+          ? ProfilePrivacySettings.fromMap(data['privacySettings'])
+          : ProfilePrivacySettings.defaults,
       lastUpdated: (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      latitude: data['latitude'] as double?,
+      longitude: data['longitude'] as double?,
+      isLocationTrackingEnabled: data['isLocationTrackingEnabled'] as bool? ?? true,
+      lastLocationUpdate: (data['lastLocationUpdate'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -97,7 +225,12 @@ class ProfileModel extends Equatable {
       'personalityTraits': personalityTraits,
       'preferences': preferences,
       'isPublic': isPublic,
+      'privacySettings': privacySettings.toMap(),
       'lastUpdated': Timestamp.fromDate(lastUpdated),
+      'latitude': latitude,
+      'longitude': longitude,
+      'isLocationTrackingEnabled': isLocationTrackingEnabled,
+      'lastLocationUpdate': lastLocationUpdate != null ? Timestamp.fromDate(lastLocationUpdate!) : null,
     };
   }
 
@@ -117,7 +250,12 @@ class ProfileModel extends Equatable {
     List<String>? personalityTraits,
     Map<String, dynamic>? preferences,
     bool? isPublic,
+    ProfilePrivacySettings? privacySettings,
     DateTime? lastUpdated,
+    double? latitude,
+    double? longitude,
+    bool? isLocationTrackingEnabled,
+    DateTime? lastLocationUpdate,
   }) {
     return ProfileModel(
       userId: userId ?? this.userId,
@@ -134,7 +272,12 @@ class ProfileModel extends Equatable {
       personalityTraits: personalityTraits ?? this.personalityTraits,
       preferences: preferences ?? this.preferences,
       isPublic: isPublic ?? this.isPublic,
+      privacySettings: privacySettings ?? this.privacySettings,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      isLocationTrackingEnabled: isLocationTrackingEnabled ?? this.isLocationTrackingEnabled,
+      lastLocationUpdate: lastLocationUpdate ?? this.lastLocationUpdate,
     );
   }
 
@@ -149,6 +292,7 @@ class ProfileModel extends Equatable {
       personalityTraits: const [],
       preferences: const {},
       lastUpdated: DateTime.now(),
+      privacySettings: const ProfilePrivacySettings(),
     );
   }
 
@@ -175,6 +319,11 @@ class ProfileModel extends Equatable {
         personalityTraits,
         preferences,
         isPublic,
+        privacySettings,
         lastUpdated,
+        latitude,
+        longitude,
+        isLocationTrackingEnabled,
+        lastLocationUpdate,
       ];
 }

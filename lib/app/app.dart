@@ -13,6 +13,8 @@ import 'package:bond_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bond_app/features/profile/data/repositories/firebase_profile_repository.dart';
 import 'package:bond_app/features/profile/domain/repositories/profile_repository.dart';
 import 'package:bond_app/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:bond_app/features/connections/presentation/bloc/connection_bloc.dart';
+import 'package:bond_app/core/di/service_locator.dart';
 
 /// The main application widget for the Bond app
 class BondApp extends StatelessWidget {
@@ -52,6 +54,9 @@ class BondApp extends StatelessWidget {
             create: (context) => ProfileBloc(
               profileRepository: context.read<ProfileRepository>(),
             ),
+          ),
+          BlocProvider<ConnectionBloc>(
+            create: (context) => serviceLocator<ConnectionBloc>(),
           ),
         ],
         child: MaterialApp.router(

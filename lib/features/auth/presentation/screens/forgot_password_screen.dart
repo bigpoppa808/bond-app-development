@@ -49,7 +49,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 backgroundColor: AppTheme.errorColor,
               ),
             );
-          } else if (state is PasswordResetSent) {
+          } else if (state is PasswordResetEmailSent) {
             setState(() {
               _emailSent = true;
             });

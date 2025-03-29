@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:bond_app/features/profile/data/models/profile_model.dart';
+import 'package:geolocator/geolocator.dart';
 
 /// Base class for profile states
 abstract class ProfileState extends Equatable {
@@ -108,4 +109,16 @@ class ProfileError extends ProfileState {
 
   @override
   List<Object> get props => [message];
+}
+
+/// State when a profile's location has been updated
+class ProfileLocationUpdated extends ProfileState {
+  /// The updated profile
+  final dynamic profile;
+
+  /// Constructor
+  const ProfileLocationUpdated(this.profile);
+
+  @override
+  List<Object> get props => [profile];
 }

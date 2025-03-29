@@ -5,18 +5,23 @@ import 'package:bond_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:bond_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:bond_app/features/profile/domain/repositories/profile_repository.dart';
 import 'package:bond_app/features/profile/data/models/profile_model.dart';
+import 'package:bond_app/core/services/location_tracking_service.dart';
+import 'package:get_it/get_it.dart';
 
 /// BLoC for managing authentication state
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
   final ProfileRepository? _profileRepository;
+  final LocationTrackingService _locationTrackingService;
   StreamSubscription<dynamic>? _authSubscription;
   
   AuthBloc({
     required AuthRepository authRepository, 
     ProfileRepository? profileRepository,
+    LocationTrackingService? locationTrackingService,
   }) : _authRepository = authRepository,
        _profileRepository = profileRepository,
+       _locationTrackingService = locationTrackingService ?? GetIt.I<LocationTrackingService>(),
        super(const AuthInitial()) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<SignInWithEmailPasswordRequested>(_onSignInWithEmailPasswordRequested);
@@ -68,6 +73,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       
       // Check if user has a profile, if not create one
       await _ensureUserHasProfile(user.uid);
+      
+      // Start location tracking for the user
+      await _locationTrackingService.startTracking(user.uid);
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -90,6 +98,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       
       // Create a profile for the new user
       await _createUserProfile(user.uid, user.displayName, user.email);
+      
+      // Start location tracking for the new user
+      await _locationTrackingService.startTracking(user.uid);
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -108,6 +119,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       
       // Check if user has a profile, if not create one
       await _ensureUserHasProfile(user.uid, user.displayName, user.email, user.photoUrl);
+      
+      // Start location tracking for the user
+      await _locationTrackingService.startTracking(user.uid);
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -126,6 +140,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       
       // Check if user has a profile, if not create one
       await _ensureUserHasProfile(user.uid, user.displayName, user.email);
+      
+      // Start location tracking for the user
+      await _locationTrackingService.startTracking(user.uid);
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -152,6 +169,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
+      // Stop location tracking before signing out
+      await _locationTrackingService.stopTracking();
+      
       await _authRepository.signOut();
       emit(const Unauthenticated());
     } catch (e) {
@@ -193,6 +213,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       // Get the user ID before deleting the account
       final userId = (state as Authenticated).user.uid;
+      
+      // Stop location tracking
+      await _locationTrackingService.stopTracking();
       
       // Delete the user's profile if profile repository is available
       if (_profileRepository != null) {

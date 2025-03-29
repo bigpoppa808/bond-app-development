@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:bond_app/features/profile/data/models/profile_model.dart';
+import 'package:geolocator/geolocator.dart';
 
 /// Base class for profile events
 abstract class ProfileEvent extends Equatable {
@@ -74,10 +75,19 @@ class DeleteProfilePhoto extends ProfileEvent {
 /// Event to load profiles by interests
 class LoadProfilesByInterests extends ProfileEvent {
   final List<String> interests;
-  final int limit;
 
-  const LoadProfilesByInterests(this.interests, {this.limit = 10});
+  const LoadProfilesByInterests(this.interests);
 
   @override
-  List<Object> get props => [interests, limit];
+  List<Object> get props => [interests];
+}
+
+/// Event to update a profile's location
+class UpdateProfileLocation extends ProfileEvent {
+  final Position position;
+
+  const UpdateProfileLocation(this.position);
+
+  @override
+  List<Object> get props => [position];
 }

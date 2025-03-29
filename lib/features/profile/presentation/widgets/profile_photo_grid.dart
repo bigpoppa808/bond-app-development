@@ -13,15 +13,19 @@ class ProfilePhotoGrid extends StatelessWidget {
   
   /// Maximum number of photos allowed
   final int maxPhotos;
+  
+  /// Whether the grid is editable
+  final bool isEditable;
 
   /// Constructor
   const ProfilePhotoGrid({
-    Key? key,
+    super.key,
     required this.photos,
     required this.onAddPhoto,
     required this.onDeletePhoto,
+    this.isEditable = false,
     this.maxPhotos = 6,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +40,13 @@ class ProfilePhotoGrid extends StatelessWidget {
       itemCount: photos.length < maxPhotos ? photos.length + 1 : maxPhotos,
       itemBuilder: (context, index) {
         // Add photo button
-        if (index == photos.length && photos.length < maxPhotos) {
+        if (index == photos.length && photos.length < maxPhotos && isEditable) {
           return _buildAddPhotoButton(context);
+        }
+        
+        // If index is out of bounds, return empty container
+        if (index >= photos.length) {
+          return Container();
         }
         
         // Photo item
@@ -81,26 +90,27 @@ class ProfilePhotoGrid extends StatelessWidget {
           ),
         ),
         
-        // Delete button
-        Positioned(
-          top: 4,
-          right: 4,
-          child: GestureDetector(
-            onTap: () => onDeletePhoto(photoUrl),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.black54,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.close,
-                color: Colors.white,
-                size: 16,
+        // Delete button - only show if editable
+        if (isEditable)
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: () => onDeletePhoto(photoUrl),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }

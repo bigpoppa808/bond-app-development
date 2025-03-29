@@ -150,93 +150,93 @@ This document outlines the detailed implementation tasks for the Bond social mee
 - [x] Integrate profile feature with authentication flow
 - [x] Ensure profiles are created upon sign-up or sign-in
 - [x] Update navigation to include profile screen
-- [ ] Add profile privacy settings
-- [ ] Implement profile search functionality
+- [x] Add profile privacy settings
+- [x] Implement profile search functionality using Algolia
 
 #### Testing and Refinement
 - [x] Write unit tests for ProfileRepository
 - [x] Write unit tests for ProfileBloc
 - [x] Create integration tests for profile and auth interaction
-- [ ] Add widget tests for profile screens
-- [ ] Test profile photo upload functionality
-- [ ] Verify form validation in profile editing
-- [ ] Test profile completion workflow
-- [ ] Create end-to-end tests for the entire profile feature
+- [x] Add widget tests for profile screens
+- [x] Test profile photo upload functionality
+- [x] Verify form validation in profile editing
+- [x] Test profile completion workflow
+- [x] Create end-to-end tests for the entire profile feature
 
 ### Week 13-14: Location and Matching Foundation
-- [ ] Set up location permissions handling
-- [ ] Implement Geolocator service
-- [ ] Create location tracking manager
-- [ ] Build geofencing utilities
-- [ ] Implement location caching
+- [x] Set up location permissions handling
+- [x] Implement Geolocator service
+- [x] Create location tracking manager
+- [x] Build geofencing utilities
+- [x] Implement location caching
 
 #### Algolia Setup
 - [x] Configure Algolia with provided credentials (App ID: 7ZNGJXM461)
-- [ ] Create initial index structure
-- [ ] Implement Algolia service wrapper
-- [ ] Set up Cloud Functions for Algolia indexing
-- [ ] Create geospatial search utilities
+- [x] Create initial index structure
+- [x] Implement Algolia service wrapper
+- [x] Set up Cloud Functions for Algolia indexing
+- [x] Create geospatial search utilities
 
 ## Phase 2: Discovery, Connections & Basic Meetings (2 Months)
 
 ### Week 1-2: Location Service
 
 #### Location Implementation
-- [ ] Set up location permissions handling
-- [ ] Implement Geolocator service
-- [ ] Create location tracking manager
-- [ ] Build geofencing utilities
-- [ ] Implement location caching
+- [x] Set up location permissions handling
+- [x] Implement Geolocator service
+- [x] Create location tracking manager
+- [x] Build geofencing utilities
+- [x] Implement location caching
 
 #### Algolia Setup
 - [x] Configure Algolia with provided credentials (App ID: 7ZNGJXM461)
-- [ ] Create initial index structure
-- [ ] Implement Algolia service wrapper
-- [ ] Set up Cloud Functions for Algolia indexing
-- [ ] Create geospatial search utilities
+- [x] Create initial index structure
+- [x] Implement Algolia service wrapper
+- [x] Set up Cloud Functions for Algolia indexing
+- [x] Create geospatial search utilities
 
 ### Week 3-4: Discovery Feature
 
 #### Data Layer
-- [ ] Create DiscoveryRepository
-- [ ] Implement Algolia discovery data source
-- [ ] Create discovery filter models
-- [ ] Set up discovery result caching
+- [x] Create DiscoveryRepository
+- [x] Implement Algolia discovery data source
+- [x] Create discovery filter models
+- [x] Set up discovery result caching
 
 #### Business Logic
-- [ ] Create DiscoveryBloc with events and states
-- [ ] Implement nearby users search logic
-- [ ] Create filter application logic
-- [ ] Build pagination for search results
+- [x] Create DiscoveryBloc with events and states
+- [x] Implement nearby users search logic
+- [x] Create filter application logic
+- [x] Build pagination for search results
 
 #### UI Layer
-- [ ] Design and implement discovery main screen
-- [ ] Create map view with Google Maps
-- [ ] Build list view for nearby users
-- [ ] Implement filter UI components
-- [ ] Create user card components
-- [ ] Build smooth transitions between views
+- [x] Design and implement discovery screen
+- [x] Create map view with Google Maps
+- [x] Build list/grid view for nearby users
+- [x] Implement filter UI components
+- [x] Create profile card components
+- [x] Build radius selection UI
 
 ### Week 5-6: Connections Feature
 
 #### Data Layer
-- [ ] Create Connection model
-- [ ] Implement ConnectionRepository
-- [ ] Set up Firestore connection data source
-- [ ] Create connection request models
+- [x] Create Connection model
+- [x] Implement ConnectionRepository
+- [x] Set up Firestore connection data source
+- [x] Create connection request models
 
 #### Business Logic
-- [ ] Create ConnectionBloc with events and states
-- [ ] Implement send connection request logic
-- [ ] Create accept/decline logic
-- [ ] Build connection list management
-- [ ] Implement connection status tracking
+- [x] Create ConnectionBloc with events and states
+- [x] Implement send connection request logic
+- [x] Create accept/decline logic
+- [x] Build connection list management
+- [x] Implement connection status tracking
 
 #### UI Layer
-- [ ] Design and implement connections list screen
-- [ ] Create connection request UI
+- [x] Design and implement connections list screen
+- [x] Create connection request UI
 - [ ] Build connection detail screen
-- [ ] Implement connection actions UI
+- [x] Implement connection actions UI
 - [ ] Create notifications for connection events
 
 ### Week 7-8: Basic Meetings Feature

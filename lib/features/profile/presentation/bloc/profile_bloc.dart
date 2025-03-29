@@ -3,14 +3,24 @@ import 'package:bond_app/features/profile/data/models/profile_model.dart';
 import 'package:bond_app/features/profile/domain/repositories/profile_repository.dart';
 import 'package:bond_app/features/profile/presentation/bloc/profile_event.dart';
 import 'package:bond_app/features/profile/presentation/bloc/profile_state.dart';
+import 'package:bond_app/core/services/profile_indexing_service.dart';
+import 'package:bond_app/core/managers/location_manager.dart';
+import 'package:get_it/get_it.dart';
 
 /// BLoC for managing profile state and events
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ProfileRepository _profileRepository;
+  final ProfileIndexingService _profileIndexingService;
+  final LocationManager _locationManager;
 
-  ProfileBloc({required ProfileRepository profileRepository})
-      : _profileRepository = profileRepository,
-        super(ProfileInitial()) {
+  ProfileBloc({
+    required ProfileRepository profileRepository,
+    ProfileIndexingService? profileIndexingService,
+    LocationManager? locationManager,
+  }) : _profileRepository = profileRepository,
+       _profileIndexingService = profileIndexingService ?? GetIt.I<ProfileIndexingService>(),
+       _locationManager = locationManager ?? GetIt.I<LocationManager>(),
+       super(ProfileInitial()) {
     on<LoadProfile>(_onLoadProfile);
     on<CreateProfile>(_onCreateProfile);
     on<UpdateProfile>(_onUpdateProfile);
@@ -18,6 +28,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<UploadProfilePhoto>(_onUploadProfilePhoto);
     on<DeleteProfilePhoto>(_onDeleteProfilePhoto);
     on<LoadProfilesByInterests>(_onLoadProfilesByInterests);
+    on<UpdateProfileLocation>(_onUpdateProfileLocation);
   }
 
   /// Handle LoadProfile event
@@ -50,6 +61,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       
       final createdProfile = await _profileRepository.createProfile(event.profile);
       
+      // Index the profile in Algolia with current location if available
+      final position = await _locationManager.getCurrentPosition();
+      if (position != null) {
+        await _profileIndexingService.indexProfile(createdProfile, position: position);
+      } else {
+        await _profileIndexingService.indexProfile(createdProfile);
+      }
+      
       emit(ProfileCreated(createdProfile));
       emit(ProfileLoaded(createdProfile));
     } catch (e) {
@@ -67,6 +86,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       
       final updatedProfile = await _profileRepository.updateProfile(event.profile);
       
+      // Update the profile in Algolia with current location if available
+      final position = await _locationManager.getCurrentPosition();
+      if (position != null) {
+        await _profileIndexingService.indexProfile(updatedProfile, position: position);
+      } else {
+        await _profileIndexingService.indexProfile(updatedProfile);
+      }
+      
       emit(ProfileUpdated(updatedProfile));
       emit(ProfileLoaded(updatedProfile));
     } catch (e) {
@@ -83,6 +110,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(ProfileDeleting());
       
       await _profileRepository.deleteProfile(event.userId);
+      
+      // Remove the profile from Algolia index
+      await _profileIndexingService.removeProfile(event.userId);
       
       emit(ProfileDeleted(event.userId));
       emit(ProfileInitial());
@@ -151,6 +181,42 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(ProfilesLoaded(profiles));
     } catch (e) {
       emit(ProfileError('Failed to load profiles by interests: $e'));
+    }
+  }
+
+  /// Handle UpdateProfileLocation event
+  Future<void> _onUpdateProfileLocation(
+    UpdateProfileLocation event,
+    Emitter<ProfileState> emit,
+  ) async {
+    try {
+      if (state is ProfileLoaded) {
+        final currentProfile = (state as ProfileLoaded).profile;
+        
+        // Update profile with new location
+        final updatedProfile = currentProfile.copyWith(
+          latitude: event.position.latitude,
+          longitude: event.position.longitude,
+          lastLocationUpdate: DateTime.now(),
+        );
+        
+        // Save to repository
+        await _profileRepository.updateProfile(updatedProfile);
+        
+        // Update in Algolia if privacy settings allow
+        if (updatedProfile.privacySettings.showLocation && 
+            updatedProfile.privacySettings.discoverable) {
+          await _profileIndexingService.updateProfileLocation(
+            updatedProfile.userId,
+            event.position,
+          );
+        }
+        
+        emit(ProfileLocationUpdated(updatedProfile));
+        emit(ProfileLoaded(updatedProfile));
+      }
+    } catch (e) {
+      emit(ProfileError('Failed to update location: $e'));
     }
   }
 }
