@@ -97,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           // Email field
                           TextFormField(
+                            key: const Key('emailField'),
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             decoration: const InputDecoration(
@@ -106,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
+                                return 'Email cannot be empty';
                               }
                               if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                                   .hasMatch(value)) {
@@ -119,6 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Password field
                           TextFormField(
+                            key: const Key('passwordField'),
                             controller: _passwordController,
                             obscureText: _obscurePassword,
                             decoration: InputDecoration(
@@ -136,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your password';
+                                return 'Password cannot be empty';
                               }
                               if (value.length < 6) {
                                 return 'Password must be at least 6 characters';
