@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'bond_colors.dart';
 
 // Core design elements
 export 'bond_colors.dart';
@@ -12,6 +13,9 @@ export 'components/bond_notification_item.dart';
 
 // Layout
 export 'layout/bond_bento_grid.dart';
+
+// Direct imports for internal use
+import 'bond_theme.dart';
 
 /// Main entry point for the Bond Design System
 ///
@@ -47,70 +51,88 @@ class BondDesignSystem {
 
   /// Design tokens that can be used throughout the app
   /// These ensure consistent spacing, sizing, and timing
-  static class Tokens {
-    // Spacing tokens
-    static const double spaceXS = 4.0;
-    static const double spaceS = 8.0;
-    static const double spaceM = 16.0;
-    static const double spaceL = 24.0;
-    static const double spaceXL = 32.0;
-    static const double spaceXXL = 48.0;
-    
-    // Border radius tokens
-    static const double radiusS = 4.0;
-    static const double radiusM = 8.0;
-    static const double radiusL = 12.0;
-    static const double radiusXL = 16.0;
-    static const double radiusXXL = 24.0;
-    static const double radiusCircular = 999.0;
-    
-    // Icon size tokens
-    static const double iconS = 16.0;
-    static const double iconM = 24.0;
-    static const double iconL = 32.0;
-    static const double iconXL = 48.0;
-    
-    // Animation duration tokens
-    static const Duration durationFast = Duration(milliseconds: 150);
-    static const Duration durationMedium = Duration(milliseconds: 300);
-    static const Duration durationSlow = Duration(milliseconds: 500);
-    
-    // Animation curves
-    static const Curve curveStandard = Curves.easeInOut;
-    static const Curve curveDecelerate = Curves.easeOutCubic;
-    static const Curve curveAccelerate = Curves.easeInCubic;
-    static const Curve curveSharp = Curves.easeInOutCubic;
-    
-    // Elevation tokens (for shadow depths)
-    static const double elevationXS = 2.0;
-    static const double elevationS = 4.0;
-    static const double elevationM = 8.0;
-    static const double elevationL = 16.0;
-    static const double elevationXL = 24.0;
-  }
+  static final tokens = _BondTokens();
   
   /// Breakpoints for responsive design
-  static class Breakpoints {
-    static const double mobileS = 320.0;
-    static const double mobileL = 375.0;
-    static const double tablet = 768.0;
-    static const double desktopS = 1024.0;
-    static const double desktopL = 1440.0;
-    
-    /// Check if the current screen size is mobile
-    static bool isMobile(BuildContext context) {
-      return MediaQuery.of(context).size.width < tablet;
-    }
-    
-    /// Check if the current screen size is tablet
-    static bool isTablet(BuildContext context) {
-      final width = MediaQuery.of(context).size.width;
-      return width >= tablet && width < desktopS;
-    }
-    
-    /// Check if the current screen size is desktop
-    static bool isDesktop(BuildContext context) {
-      return MediaQuery.of(context).size.width >= desktopS;
-    }
+  static final breakpoints = _BondBreakpoints();
+}
+
+/// Design tokens for the Bond Design System
+class _BondTokens {
+  // Spacing tokens
+  final double spaceXS = 4.0;
+  final double spaceS = 8.0;
+  final double spaceM = 16.0;
+  final double spaceL = 24.0;
+  final double spaceXL = 32.0;
+  final double spaceXXL = 48.0;
+  
+  // Border radius tokens
+  final double radiusS = 4.0;
+  final double radiusM = 8.0;
+  final double radiusL = 12.0;
+  final double radiusXL = 16.0;
+  final double radiusXXL = 24.0;
+  final double radiusCircular = 999.0;
+  
+  // Icon size tokens
+  final double iconS = 16.0;
+  final double iconM = 24.0;
+  final double iconL = 32.0;
+  final double iconXL = 48.0;
+  
+  // Animation duration tokens
+  final Duration durationFast = Duration(milliseconds: 150);
+  final Duration durationMedium = Duration(milliseconds: 300);
+  final Duration durationSlow = Duration(milliseconds: 500);
+  
+  // Animation curves
+  final Curve curveStandard = Curves.easeInOut;
+  final Curve curveDecelerate = Curves.easeOutCubic;
+  final Curve curveAccelerate = Curves.easeInCubic;
+  final Curve curveSharp = Curves.easeInOutCubic;
+  
+  // Elevation tokens (for shadow depths)
+  final double elevationXS = 2.0;
+  final double elevationS = 4.0;
+  final double elevationM = 8.0;
+  final double elevationL = 16.0;
+  final double elevationXL = 24.0;
+  
+  // Avatar colors - used for generating consistent avatar background colors
+  final List<Color> avatarColors = [
+    BondColors.bondTeal,
+    BondColors.bondPurple,
+    Color(0xFF5E72E4), // Indigo
+    Color(0xFF11CDEF), // Cyan
+    Color(0xFFFB6340), // Orange
+    Color(0xFF2DCE89), // Green
+    Color(0xFFF5365C), // Pink
+    Color(0xFFFFD600), // Yellow
+  ];
+}
+
+/// Breakpoints for responsive design
+class _BondBreakpoints {
+  final double mobileS = 320.0;
+  final double mobileL = 375.0;
+  final double tablet = 768.0;
+  final double desktopS = 1024.0;
+  final double desktopL = 1440.0;
+  
+  /// Check if the current screen size is mobile
+  bool isMobile(BuildContext context) {
+    return MediaQuery.of(context).size.width < tablet;
+  }
+  
+  /// Check if the current screen size is tablet
+  bool isTablet(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    return width >= tablet && width < desktopS;
+  }
+  
+  /// Check if the current screen size is desktop
+  bool isDesktop(BuildContext context) {
+    return MediaQuery.of(context).size.width >= desktopS;
   }
 }

@@ -9,6 +9,7 @@ class BondColors {
 
   // Primary Colors
   static const Color bondTeal = Color(0xFF0ABAB5);
+  static const Color bondPurple = Color(0xFF6E44FF); // Added bondPurple as an alias for connectionPurple
   static const Color connectionPurple = Color(0xFF6E44FF);
   static const Color warmthOrange = Color(0xFFFF7D3B);
   static const Color trustBlue = Color(0xFF2D7FF9);

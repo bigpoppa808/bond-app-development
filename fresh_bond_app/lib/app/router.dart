@@ -6,7 +6,10 @@ import 'package:fresh_bond_app/features/auth/domain/blocs/auth_state.dart';
 import 'package:fresh_bond_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:fresh_bond_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:fresh_bond_app/features/auth/presentation/screens/signup_screen.dart';
+import 'package:fresh_bond_app/features/auth/presentation/screens/demo_login_screen.dart';
+import 'package:fresh_bond_app/features/home/presentation/screens/demo_home_screen.dart';
 import 'package:fresh_bond_app/features/notifications/presentation/screens/notifications_screen_v2.dart';
+import 'package:fresh_bond_app/features/showcase/presentation/screens/design_system_showcase.dart';
 import 'package:fresh_bond_app/features/splash/presentation/screens/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,6 +24,12 @@ class AppRouter {
 
   /// Router redirects
   String? _authGuard(BuildContext context, GoRouterState state) {
+    // TESTING ONLY: Authentication bypass
+    // Commenting out auth guard to allow direct access to all screens for testing purposes
+    // TODO: Re-enable auth guard for production
+    return null;
+    
+    /*
     final authState = _authBloc.state;
     final isLoggedIn = authState is AuthAuthenticatedState;
     
@@ -41,11 +50,12 @@ class AppRouter {
     
     // No redirection needed
     return null;
+    */
   }
 
   /// Define the router configuration
   late final GoRouter _router = GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/demo-login', 
     debugLogDiagnostics: true,
     redirect: _authGuard,
     routes: [
@@ -69,10 +79,20 @@ class AppRouter {
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
       
+      // Demo routes
+      GoRoute(
+        path: '/demo-login',
+        builder: (context, state) => const DemoLoginScreen(),
+      ),
+      GoRoute(
+        path: '/demo-home',
+        builder: (context, state) => const DemoHomeScreen(),
+      ),
+      
       // Main app routes - using the shell
       GoRoute(
         path: '/home',
-        builder: (context, state) => const MainShell(initialIndex: 0),
+        builder: (context, state) => const DemoHomeScreen(), // Use demo home screen for now
       ),
       GoRoute(
         path: '/discover',
@@ -87,6 +107,12 @@ class AppRouter {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreenV2(),
+      ),
+      
+      // Design System Showcase
+      GoRoute(
+        path: '/showcase',
+        builder: (context, state) => const DesignSystemShowcase(),
       ),
     ],
   );

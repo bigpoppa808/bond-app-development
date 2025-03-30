@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/design/bond_design_system.dart';
+import '../../domain/adapters/notification_adapter.dart';
 import '../../domain/entities/notification_entity.dart';
-import '../bloc/notification_bloc.dart';
+import '../../domain/blocs/notification_bloc.dart';
+import '../../domain/blocs/notification_event.dart';
+import '../../domain/blocs/notification_state.dart';
 
 /// A redesigned Notifications screen that applies the Bond Design System
 /// with Neo-Glassmorphism, Bento Box layout, and micro-interactions.
@@ -30,14 +34,14 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
       
       // Load appropriate notifications based on selected tab
       if (_tabController.index == 0) {
-        context.read<NotificationBloc>().add(LoadAllNotifications());
+        context.read<NotificationBloc>().add(LoadAllNotificationsEvent());
       } else {
-        context.read<NotificationBloc>().add(LoadUnreadNotifications());
+        context.read<NotificationBloc>().add(LoadUnreadNotificationsEvent());
       }
     });
 
     // Initial load of all notifications
-    context.read<NotificationBloc>().add(LoadAllNotifications());
+    context.read<NotificationBloc>().add(LoadAllNotificationsEvent());
   }
 
   @override
@@ -84,19 +88,29 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
                 Expanded(
                   child: BlocBuilder<NotificationBloc, NotificationState>(
                     builder: (context, state) {
-                      if (state is NotificationLoading) {
+                      if (state is NotificationLoadingState) {
                         return _buildLoadingState();
-                      } else if (state is NotificationAllLoaded || state is NotificationUnreadLoaded) {
-                        final notifications = state is NotificationAllLoaded
-                            ? (state as NotificationAllLoaded).notifications
-                            : (state as NotificationUnreadLoaded).notifications;
-                            
-                        if (notifications.isEmpty) {
+                      } else if (state is NotificationsLoadedState) {
+                        final notificationEntities = NotificationAdapter.toEntityList(
+                          state.notifications,
+                        );
+                        
+                        if (notificationEntities.isEmpty) {
                           return _buildEmptyState();
                         }
                         
-                        return _buildNotificationsList(notifications);
-                      } else if (state is NotificationError) {
+                        return _buildNotificationsList(notificationEntities);
+                      } else if (state is UnreadNotificationsLoadedState) {
+                        final notificationEntities = NotificationAdapter.toEntityList(
+                          state.notifications,
+                        );
+                            
+                        if (notificationEntities.isEmpty) {
+                          return _buildEmptyState();
+                        }
+                        
+                        return _buildNotificationsList(notificationEntities);
+                      } else if (state is NotificationErrorState) {
                         return _buildErrorState(state.message);
                       }
                       
@@ -119,12 +133,12 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
         children: [
           // Back button with glass effect
           BondCard(
-            borderRadius: BondDesignSystem.Tokens.radiusCircular,
+            borderRadius: BondDesignSystem.tokens.radiusCircular,
             padding: EdgeInsets.zero,
             height: 44,
             width: 44,
             elevated: true,
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => context.go('/home'),
             child: const Center(
               child: Icon(Icons.arrow_back_rounded),
             ),
@@ -142,10 +156,10 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
           // Mark all as read button
           BlocBuilder<NotificationBloc, NotificationState>(
             builder: (context, state) {
-              if (state is NotificationAllLoaded || state is NotificationUnreadLoaded) {
-                final hasUnread = state is NotificationAllLoaded
+              if (state is NotificationsLoadedState || state is UnreadNotificationsLoadedState) {
+                final hasUnread = state is NotificationsLoadedState
                     ? state.notifications.any((n) => !n.isRead)
-                    : (state as NotificationUnreadLoaded).notifications.isNotEmpty;
+                    : (state as UnreadNotificationsLoadedState).notifications.isNotEmpty;
                     
                 if (hasUnread) {
                   return BondButton(
@@ -154,7 +168,7 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
                     height: 44,
                     useGlass: true,
                     onPressed: () {
-                      context.read<NotificationBloc>().add(MarkAllAsRead());
+                      context.read<NotificationBloc>().add(MarkAllNotificationsAsReadEvent());
                     },
                   );
                 }
@@ -172,13 +186,13 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
       child: BondCard(
-        borderRadius: BondDesignSystem.Tokens.radiusL,
+        borderRadius: BondDesignSystem.tokens.radiusL,
         padding: const EdgeInsets.all(4),
         child: TabBar(
           controller: _tabController,
           indicatorSize: TabBarIndicatorSize.tab,
           indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(BondDesignSystem.Tokens.radiusM),
+            borderRadius: BorderRadius.circular(BondDesignSystem.tokens.radiusM),
             color: BondColors.bondTeal,
           ),
           labelColor: Colors.white,
@@ -251,7 +265,7 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
       onTap: () {
         // If unread, mark as read when tapped
         if (!notification.isRead) {
-          context.read<NotificationBloc>().add(MarkAsRead(notification.id));
+          context.read<NotificationBloc>().add(MarkNotificationAsReadEvent(notification.id));
         }
         
         // Handle notification tap (e.g., navigate to relevant screen)
@@ -266,9 +280,9 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
           ),
           onPressed: () {
             if (notification.isRead) {
-              context.read<NotificationBloc>().add(MarkAsUnread(notification.id));
+              context.read<NotificationBloc>().add(MarkNotificationAsReadEvent(notification.id));
             } else {
-              context.read<NotificationBloc>().add(MarkAsRead(notification.id));
+              context.read<NotificationBloc>().add(MarkNotificationAsReadEvent(notification.id));
             }
           },
         ),
@@ -277,7 +291,7 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
         IconButton(
           icon: const Icon(Icons.delete_outline, size: 20),
           onPressed: () {
-            context.read<NotificationBloc>().add(DeleteNotification(notification.id));
+            context.read<NotificationBloc>().add(DeleteNotificationEvent(notification.id));
           },
         ),
       ],
@@ -427,8 +441,8 @@ class _NotificationsScreenV2State extends State<NotificationsScreenV2> with Sing
             onPressed: () {
               context.read<NotificationBloc>().add(
                 _showAllNotifications 
-                    ? LoadAllNotifications() 
-                    : LoadUnreadNotifications()
+                    ? LoadAllNotificationsEvent() 
+                    : LoadUnreadNotificationsEvent()
               );
             },
           ),

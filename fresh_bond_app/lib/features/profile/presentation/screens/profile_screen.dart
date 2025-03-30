@@ -299,6 +299,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     );
                                   },
                                 ),
+                                // Design System Showcase (for developers and testing)
+                                _buildSettingsItem(
+                                  icon: Icons.palette_outlined,
+                                  title: 'Design System Showcase',
+                                  onTap: () {
+                                    // Navigate to the design system showcase
+                                    context.go('/showcase');
+                                  },
+                                ),
                                 const SizedBox(height: 16),
                                 
                                 // Sign out button
