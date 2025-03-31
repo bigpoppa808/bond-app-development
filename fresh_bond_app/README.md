@@ -9,6 +9,7 @@ A social connection platform built with Flutter and Firebase.
 - **Meetings**: Schedule and manage in-person meetings
 - **NFC Verification**: Secure identity verification using NFC technology with SHA-256 hashing
 - **Notifications**: Real-time notifications for app events
+- **Token Economy**: Comprehensive token system with achievements and rewards
 - **Design System**: Comprehensive Bond Design System with reusable components
 
 ## Firebase Setup
@@ -98,3 +99,35 @@ The app includes necessary iOS configuration for NFC capabilities:
 
 ### Integration
 NFC verification is integrated with the Meetings feature, allowing users to verify identities during in-person meetings.
+
+## Token Economy System
+
+The app implements a comprehensive token economy system to incentivize user engagement and reward positive interactions:
+
+### Technical Implementation
+- **Repository Pattern**: Follows clean architecture with TokenRepository and AchievementRepository
+- **State Management**: BLoC implementation for token balance and achievements
+- **Transaction History**: Complete tracking of all token earnings and expenditures
+- **Achievement Framework**: Comprehensive achievement system with progress tracking
+
+### Earning Mechanisms
+Users can earn tokens through various activities:
+- Profile completion
+- Meeting attendance (verified via NFC)
+- Receiving positive feedback
+- Regular app usage
+- Organizing group events
+- Achieving personal goals
+
+### Spending Mechanisms
+Tokens can be spent on premium features:
+- Advanced search filters
+- Profile highlighting in discovery
+- Premium customization options
+- Access to exclusive features
+
+### UI Integration
+The token economy is integrated into the app's UI:
+- Token wallet screen for managing balance and viewing transaction history
+- Achievements screen for tracking progress and claiming rewards
+- Home screen widgets showing current balance and achievement progress

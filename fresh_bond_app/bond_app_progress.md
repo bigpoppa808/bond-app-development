@@ -80,6 +80,17 @@
 - [x] Token wallet UI
 - [x] Achievements UI
 - [x] Integration with home screen
+- [x] BondCard variants for token economy UI
+- [x] TokenBloc and AchievementBloc implementation
+- [x] Repository implementations with Firestore integration
+- [ ] Token marketplace
+- [ ] Advanced achievement criteria
+
+### Notifications
+- [x] Notification UI
+- [x] Notification service
+- [x] Real-time notifications
+- [x] Notification preferences
 
 ## In Progress
 - [ ] Donor management system
