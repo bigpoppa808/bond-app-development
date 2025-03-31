@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../bond_colors.dart';
-import '../bond_typography.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_colors.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_typography.dart';
 
 /// Button variants according to the Bond Design System
 enum BondButtonVariant {
@@ -41,6 +41,7 @@ class BondButton extends StatelessWidget {
   final bool useGradient;
   final EdgeInsetsGeometry? padding;
   final bool useHapticFeedback;
+  final bool fullWidth;
 
   const BondButton({
     Key? key,
@@ -56,6 +57,7 @@ class BondButton extends StatelessWidget {
     this.useGradient = true,
     this.padding,
     this.useHapticFeedback = true,
+    this.fullWidth = false,
   }) : assert(
          (variant == BondButtonVariant.icon && icon != null) || 
          (variant != BondButtonVariant.icon && label != null),
@@ -82,7 +84,7 @@ class BondButton extends StatelessWidget {
     // Configure button appearance based on variant
     switch (variant) {
       case BondButtonVariant.primary:
-        backgroundColor = BondColors.bondTeal;
+        backgroundColor = BondColors.primary;
         foregroundColor = Colors.white;
         border = null;
         gradient = useGradient ? BondColors.primaryGradient : null;
@@ -91,23 +93,23 @@ class BondButton extends StatelessWidget {
         
       case BondButtonVariant.secondary:
         backgroundColor = Colors.transparent;
-        foregroundColor = BondColors.bondTeal;
-        border = Border.all(color: BondColors.bondTeal, width: 1.5);
+        foregroundColor = BondColors.primary;
+        border = Border.all(color: BondColors.primary, width: 1.5);
         gradient = null;
         buttonPadding = padding ?? const EdgeInsets.symmetric(horizontal: 24.0);
         break;
         
       case BondButtonVariant.tertiary:
         backgroundColor = Colors.transparent;
-        foregroundColor = BondColors.bondTeal;
+        foregroundColor = BondColors.primary;
         border = null;
         gradient = null;
         buttonPadding = padding ?? const EdgeInsets.symmetric(horizontal: 16.0);
         break;
         
       case BondButtonVariant.icon:
-        backgroundColor = BondColors.bondTeal.withOpacity(0.1);
-        foregroundColor = BondColors.bondTeal;
+        backgroundColor = BondColors.primary.withOpacity(0.1);
+        foregroundColor = BondColors.primary;
         border = null;
         gradient = null;
         buttonPadding = EdgeInsets.zero;
@@ -134,7 +136,7 @@ class BondButton extends StatelessWidget {
         onTap: isLoading ? null : onPressed,
         borderRadius: BorderRadius.circular(borderRadius),
         child: Ink(
-          width: variant == BondButtonVariant.icon ? height : width,
+          width: fullWidth ? double.infinity : (variant == BondButtonVariant.icon ? height : width),
           height: height,
           padding: buttonPadding,
           decoration: BoxDecoration(
@@ -172,7 +174,7 @@ class BondButton extends StatelessWidget {
     return Center(
       child: Text(
         label!,
-        style: BondTypography.button(context).copyWith(color: foregroundColor),
+        style: BondTypography.button.copyWith(color: foregroundColor),
         textAlign: TextAlign.center,
       ),
     );
@@ -199,7 +201,7 @@ class BondButton extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(borderRadius),
           child: Container(
-            width: variant == BondButtonVariant.icon ? height : width,
+            width: fullWidth ? double.infinity : (variant == BondButtonVariant.icon ? height : width),
             height: height,
             padding: buttonPadding,
             decoration: BoxDecoration(

@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fresh_bond_app/app/theme.dart';
-import 'package:fresh_bond_app/core/analytics/analytics_service.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_bloc.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_event.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_state.dart';
+import 'package:fresh_bond_app/core/design/components/bond_avatar.dart';
+import 'package:fresh_bond_app/core/design/components/bond_button.dart';
+import 'package:fresh_bond_app/core/design/components/bond_card.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_colors.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_spacing.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_typography.dart';
+import 'package:fresh_bond_app/core/di/service_locator.dart';
+import 'package:fresh_bond_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:fresh_bond_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -18,274 +22,359 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Log screen view for analytics
-    AnalyticsService.instance.logScreen('home');
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final authRepository = ServiceLocator.getIt<AuthRepository>();
+      final user = await authRepository.getCurrentUser();
+      if (user != null) {
+        // User data loaded successfully
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error loading user data: $e');
+    }
   }
 
   void _navigateToProfile() {
-    context.push('/profile');
+    context.go('/profile');
   }
   
   void _navigateToDiscover() {
-    context.push('/discover');
-  }
-  
-  void _navigateToConnections() {
-    context.push('/connections');
+    context.go('/discover');
   }
   
   void _navigateToMessages() {
-    context.push('/messages');
-  }
-  
-  void _signOut() {
-    context.read<AuthBloc>().add(const AuthSignOutEvent());
+    context.go('/messages');
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listenWhen: (previous, current) => current is AuthUnauthenticatedState,
-      listener: (context, state) {
-        if (state is AuthUnauthenticatedState) {
-          context.go('/login');
-        }
-      },
-      child: Scaffold(
-        backgroundColor: BondAppTheme.backgroundPrimary,
-        appBar: AppBar(
-          title: const Text('Home'),
-          backgroundColor: BondAppTheme.backgroundSecondary,
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.person),
-              onPressed: _navigateToProfile,
-              tooltip: 'Profile',
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: _signOut,
-              tooltip: 'Sign Out',
-            ),
-          ],
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Welcome section
-                BlocBuilder<AuthBloc, AuthState>(
-                  buildWhen: (previous, current) => current is AuthAuthenticatedState,
-                  builder: (context, state) {
-                    String displayName = 'Friend';
-                    if (state is AuthAuthenticatedState && state.user.displayName != null) {
-                      displayName = state.user.displayName!;
-                    }
-                    
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: BondColors.background,
+      appBar: AppBar(
+        title: const Text('Home'),
+        backgroundColor: BondColors.backgroundSecondary,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: _navigateToProfile,
+            tooltip: 'Profile',
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              context.read<AuthBloc>().add(const AuthSignOutEvent());
+            },
+            tooltip: 'Sign Out',
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(BondSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome section
+              Text(
+                'Welcome to Bond',
+                style: BondTypography.heading1,
+              ),
+              const SizedBox(height: BondSpacing.sm),
+              Text(
+                'Connect with like-minded people and build meaningful relationships',
+                style: BondTypography.body1,
+              ),
+              const SizedBox(height: BondSpacing.xl),
+              
+              // Quick actions
+              BondCard(
+                padding: const EdgeInsets.all(BondSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Quick Actions',
+                      style: BondTypography.heading3,
+                    ),
+                    const SizedBox(height: BondSpacing.md),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Text(
-                          'Welcome, $displayName',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: BondAppTheme.textPrimary,
-                          ),
+                        _buildQuickAction(
+                          icon: Icons.explore,
+                          label: 'Discover',
+                          onTap: _navigateToDiscover,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Stay connected with your loved ones',
-                          style: TextStyle(
-                            color: BondAppTheme.textSecondary,
-                            fontSize: 16,
-                          ),
+                        _buildQuickAction(
+                          icon: Icons.people,
+                          label: 'Connections',
+                          onTap: () {},
+                        ),
+                        _buildQuickAction(
+                          icon: Icons.chat,
+                          label: 'Messages',
+                          onTap: _navigateToMessages,
+                        ),
+                        _buildQuickAction(
+                          icon: Icons.person,
+                          label: 'Profile',
+                          onTap: _navigateToProfile,
                         ),
                       ],
-                    );
-                  },
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Quick actions grid
-                Text(
-                  'Quick Actions',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: BondAppTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                GridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  children: [
-                    _buildQuickActionCard(
-                      context,
-                      icon: Icons.people,
-                      title: 'Connections',
-                      description: 'View and manage your connections',
-                      onTap: _navigateToConnections,
-                    ),
-                    _buildQuickActionCard(
-                      context,
-                      icon: Icons.message,
-                      title: 'Messages',
-                      description: 'Check your messages',
-                      onTap: _navigateToMessages,
-                    ),
-                    _buildQuickActionCard(
-                      context,
-                      icon: Icons.search,
-                      title: 'Discover',
-                      description: 'Find new connections',
-                      onTap: _navigateToDiscover,
-                    ),
-                    _buildQuickActionCard(
-                      context,
-                      icon: Icons.event,
-                      title: 'Events',
-                      description: 'Upcoming events',
-                      onTap: () {},
                     ),
                   ],
                 ),
-                
-                const SizedBox(height: 32),
-                
-                // Recent activity
-                Text(
-                  'Recent Activity',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: BondAppTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Placeholder for recent activity
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: BondAppTheme.backgroundSecondary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.notifications_off,
-                          color: BondAppTheme.textSecondary,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No recent activity',
-                          style: TextStyle(
-                            color: BondAppTheme.textSecondary,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
+              ),
+              const SizedBox(height: BondSpacing.lg),
+              
+              // Suggested connections
+              Text(
+                'Suggested Connections',
+                style: BondTypography.heading2,
+              ),
+              const SizedBox(height: BondSpacing.md),
+              SizedBox(
+                height: 200,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    _buildConnectionCard(
+                      name: 'Alex Johnson',
+                      bio: 'Software Engineer',
+                      interests: ['Technology', 'Music', 'Travel'],
                     ),
-                  ),
+                    _buildConnectionCard(
+                      name: 'Sarah Williams',
+                      bio: 'UX Designer',
+                      interests: ['Design', 'Art', 'Photography'],
+                    ),
+                    _buildConnectionCard(
+                      name: 'Michael Brown',
+                      bio: 'Marketing Specialist',
+                      interests: ['Marketing', 'Business', 'Networking'],
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: BondSpacing.lg),
+              
+              // Recent activity
+              Text(
+                'Recent Activity',
+                style: BondTypography.heading2,
+              ),
+              const SizedBox(height: BondSpacing.md),
+              _buildActivityItem(
+                avatar: 'https://i.pravatar.cc/150?img=1',
+                name: 'Alex Johnson',
+                action: 'connected with you',
+                timeAgo: '2h ago',
+              ),
+              _buildActivityItem(
+                avatar: 'https://i.pravatar.cc/150?img=2',
+                name: 'Sarah Williams',
+                action: 'viewed your profile',
+                timeAgo: '4h ago',
+              ),
+              _buildActivityItem(
+                avatar: 'https://i.pravatar.cc/150?img=3',
+                name: 'Michael Brown',
+                action: 'sent you a message',
+                timeAgo: '1d ago',
+              ),
+            ],
           ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0, // Home is selected
-          selectedItemColor: BondAppTheme.primaryColor,
-          unselectedItemColor: BondAppTheme.textSecondary,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0, // Home is selected
+        selectedItemColor: BondColors.primaryColor,
+        unselectedItemColor: BondColors.textSecondary,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Discover',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: 'Messages',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0: // Already on Home
+              break;
+            case 1:
+              _navigateToDiscover();
+              break;
+            case 2:
+              _navigateToMessages();
+              break;
+            case 3:
+              _navigateToProfile();
+              break;
+          }
+        },
+      ),
+    );
+  }
+  
+  Widget _buildQuickAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.all(BondSpacing.sm),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(BondSpacing.sm),
+              decoration: BoxDecoration(
+                color: BondColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: BondColors.primary,
+                size: 24,
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Discover',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat),
-              label: 'Messages',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
+            const SizedBox(height: BondSpacing.xs),
+            Text(
+              label,
+              style: BondTypography.body2,
             ),
           ],
-          onTap: (index) {
-            switch (index) {
-              case 0: // Already on Home
-                break;
-              case 1:
-                _navigateToDiscover();
-                break;
-              case 2:
-                _navigateToMessages();
-                break;
-              case 3:
-                _navigateToProfile();
-                break;
-            }
-          },
         ),
       ),
     );
   }
   
-  Widget _buildQuickActionCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String description,
-    required VoidCallback onTap,
+  Widget _buildConnectionCard({
+    required String name,
+    required String bio,
+    required List<String> interests,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: BondAppTheme.backgroundSecondary,
-          borderRadius: BorderRadius.circular(12),
-        ),
+    return Container(
+      width: 180,
+      margin: const EdgeInsets.only(right: BondSpacing.md),
+      child: BondCard(
+        padding: const EdgeInsets.all(BondSpacing.md),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: BondAppTheme.primaryColor,
-              size: 40,
+            const BondAvatar(
+              size: BondAvatarSize.lg,
+              imageUrl: null,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: BondSpacing.sm),
             Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              description,
+              name,
+              style: BondTypography.heading4,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: BondAppTheme.textSecondary,
-                fontSize: 12,
-              ),
+            ),
+            const SizedBox(height: BondSpacing.xs),
+            Text(
+              bio,
+              style: BondTypography.body2,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: BondSpacing.sm),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 4,
+              runSpacing: 4,
+              children: interests
+                  .map((interest) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: BondColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          interest,
+                          style: BondTypography.caption.copyWith(
+                            color: BondColors.primary,
+                          ),
+                        ),
+                      ))
+                  .toList(),
+            ),
+            const Spacer(),
+            BondButton(
+              label: 'Connect',
+              variant: BondButtonVariant.secondary,
+              onPressed: () {},
             ),
           ],
         ),
+      ),
+    );
+  }
+  
+  Widget _buildActivityItem({
+    required String avatar,
+    required String name,
+    required String action,
+    required String timeAgo,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: BondSpacing.md),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundImage: NetworkImage(avatar),
+            radius: 20,
+          ),
+          const SizedBox(width: BondSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    style: BondTypography.body2.copyWith(
+                      color: BondColors.text,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: ' $action'),
+                    ],
+                  ),
+                ),
+                Text(
+                  timeAgo,
+                  style: BondTypography.caption.copyWith(
+                    color: BondColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

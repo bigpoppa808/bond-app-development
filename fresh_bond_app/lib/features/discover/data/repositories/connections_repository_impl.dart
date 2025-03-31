@@ -106,6 +106,20 @@ class ConnectionsRepositoryImpl implements ConnectionsRepository {
       throw _errorHandler.handleError(e);
     }
   }
+  
+  @override
+  Future<List<ConnectionModel>> getConnections() async {
+    try {
+      _logger.d('Fetching all connections');
+      
+      // In a real implementation, this would fetch from an API
+      // For now, return only connections marked as connected
+      return _getMockConnections().where((conn) => conn.isConnected).toList();
+    } catch (e, stackTrace) {
+      _logger.e('Error fetching connections', error: e, stackTrace: stackTrace);
+      throw _errorHandler.handleError(e);
+    }
+  }
 
   // Helper method to generate mock connection data
   List<ConnectionModel> _getMockConnections() {

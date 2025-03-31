@@ -19,4 +19,7 @@ abstract class ConnectionsRepository {
   
   /// Get pending connection requests for the current user
   Future<List<ConnectionModel>> getPendingRequests();
+  
+  /// Get all connections for the current user
+  Future<List<ConnectionModel>> getConnections();
 }

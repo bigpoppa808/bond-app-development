@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fresh_bond_app/app/theme.dart';
-import 'package:fresh_bond_app/core/analytics/analytics_service.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_colors.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_spacing.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_typography.dart';
 import 'package:fresh_bond_app/features/notifications/domain/blocs/notification_bloc.dart';
 import 'package:fresh_bond_app/features/notifications/domain/blocs/notification_event.dart';
 import 'package:fresh_bond_app/features/notifications/domain/blocs/notification_state.dart';
@@ -22,9 +23,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void initState() {
     super.initState();
     
-    // Track screen view
-    AnalyticsService.instance.logScreen('notifications');
-    
     // Load notifications
     context.read<NotificationBloc>().add(const LoadAllNotificationsEvent());
   }
@@ -32,10 +30,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BondAppTheme.backgroundPrimary,
+      backgroundColor: BondColors.background,
       appBar: AppBar(
         title: const Text('Notifications'),
-        backgroundColor: BondAppTheme.backgroundSecondary,
+        backgroundColor: BondColors.backgroundSecondary,
         elevation: 0,
         actions: [
           // Mark all as read
@@ -54,39 +52,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       body: BlocConsumer<NotificationBloc, NotificationState>(
         listener: (context, state) {
-          if (state is NotificationMarkedAsReadState) {
+          if (state is NotificationActionSuccessState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Notification marked as read'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          } else if (state is AllNotificationsMarkedAsReadState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('All notifications marked as read'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          } else if (state is NotificationDeletedState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Notification deleted'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          } else if (state is AllNotificationsDeletedState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('All notifications deleted'),
-                duration: Duration(seconds: 2),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: BondColors.success,
+                duration: const Duration(seconds: 2),
               ),
             );
           } else if (state is NotificationErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Error: ${state.message}'),
-                backgroundColor: BondAppTheme.errorColor,
+                backgroundColor: BondColors.error,
                 duration: const Duration(seconds: 3),
               ),
             );
@@ -96,44 +74,45 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (state is NotificationLoadingState) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is NotificationsLoadedState) {
-            return _buildNotificationsList(state.notifications);
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
+            final notifications = state.notifications;
+            
+            if (notifications.isEmpty) {
+              return _buildEmptyState();
+            }
+            
+            // Group notifications by date
+            final groupedNotifications = _groupNotificationsByDate(notifications);
+            return _buildNotificationsList(groupedNotifications);
+          } else if (state is NotificationErrorState) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_off,
+                    size: 64,
+                    color: BondColors.textSecondary,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load notifications',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: BondColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
             );
           }
+          
+          return const SizedBox.shrink();
         },
       ),
     );
   }
   
-  Widget _buildNotificationsList(List<NotificationModel> notifications) {
-    if (notifications.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.notifications_off,
-              size: 64,
-              color: BondAppTheme.textSecondary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No notifications',
-              style: TextStyle(
-                fontSize: 18,
-                color: BondAppTheme.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Group notifications by date
-    final groupedNotifications = _groupNotificationsByDate(notifications);
-
+  Widget _buildNotificationsList(Map<String, List<NotificationModel>> groupedNotifications) {
     return ListView.builder(
       padding: const EdgeInsets.only(top: 8, bottom: 16),
       itemCount: groupedNotifications.length,
@@ -150,7 +129,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 dateGroup,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: BondAppTheme.textSecondary,
+                  color: BondColors.textSecondary,
                 ),
               ),
             ),
@@ -285,7 +264,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ElevatedButton(
             onPressed: onAction,
             style: ElevatedButton.styleFrom(
-              backgroundColor: BondAppTheme.primaryColor,
+              backgroundColor: BondColors.primary,
             ),
             child: Text(actionText),
           ),
@@ -315,7 +294,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               context.read<NotificationBloc>().add(const MarkAllNotificationsAsReadEvent());
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: BondAppTheme.primaryColor,
+              backgroundColor: BondColors.primary,
             ),
             child: const Text('Mark All'),
           ),
@@ -345,9 +324,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               context.read<NotificationBloc>().add(const DeleteAllNotificationsEvent());
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: BondAppTheme.errorColor,
+              backgroundColor: BondColors.error,
             ),
             child: const Text('Delete All'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.notifications_off,
+            size: 64,
+            color: BondColors.textSecondary,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No notifications',
+            style: TextStyle(
+              fontSize: 18,
+              color: BondColors.textSecondary,
+            ),
           ),
         ],
       ),

@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../bond_colors.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_colors.dart';
 
 /// A glass-effect card component implementing the Neo-Glassmorphism style
 /// from the Bond Design System.

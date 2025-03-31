@@ -1,96 +1,67 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fresh_bond_app/app/app.dart';
-import 'package:fresh_bond_app/core/analytics/analytics_service.dart';
 import 'package:fresh_bond_app/core/config/app_config.dart';
-import 'package:fresh_bond_app/core/config/env_config.dart';
 import 'package:fresh_bond_app/core/di/service_locator.dart';
-import 'package:fresh_bond_app/core/network/connectivity_service.dart';
-import 'package:fresh_bond_app/core/utils/error_handler.dart';
-import 'package:fresh_bond_app/core/utils/logger.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_bloc.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_event.dart';
-import 'package:fresh_bond_app/features/discover/domain/blocs/discover_bloc.dart';
-import 'package:fresh_bond_app/features/notifications/domain/blocs/notification_bloc.dart';
+import 'package:fresh_bond_app/features/auth/data/firebase_auth_service.dart';
+import 'package:fresh_bond_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:fresh_bond_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fresh_bond_app/features/meetings/domain/blocs/meeting_bloc.dart';
+import 'package:fresh_bond_app/features/meetings/domain/blocs/nfc_verification/nfc_verification_bloc.dart';
+import 'package:fresh_bond_app/features/meetings/domain/repositories/meeting_repository.dart';
+import 'package:fresh_bond_app/features/meetings/domain/repositories/nfc_verification_repository_interface.dart';
+import 'package:fresh_bond_app/firebase_options.dart';
 
 void main() async {
-  // Set up error handling zone
-  runZonedGuarded(() async {
-    // Ensure Flutter binding is initialized
-    WidgetsFlutterBinding.ensureInitialized();
-    
-    // Set preferred orientations
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-
-    // Setup environment configuration
-    // This internally initializes AppConfig with the appropriate environment
-    EnvConfig.setupEnvironment();
-
-    // Initialize service locator
-    await ServiceLocator.initialize();
-    
-    // Initialize analytics (constructor already initializes it)
-    final _ = AnalyticsService.instance;
-
-    // Initialize connectivity service
-    ConnectivityService.instance;
-    
-    // Log app start
-    AppLogger.instance.i('App started in ${EnvConfig.currentEnvName} mode');
-
-    // Run the app
-    runApp(BondAppRoot()); 
-  }, ErrorHandler.handleZoneError);
-}
-
-/// Root widget for the Bond app
-class BondAppRoot extends StatelessWidget {
-  /// Constructor
-  BondAppRoot({Key? key}) : super(key: key); 
-
-  @override
-  Widget build(BuildContext context) {
-    // Create auth bloc
-    final authBloc = AuthBloc(
-      ServiceLocator.authRepository,
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize AppConfig first
+  AppConfig.initialize(environment: Environment.development);
+  
+  // Initialize Firebase with a try-catch to handle potential errors
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
     );
-    
-    // Check authentication status on app start
-    authBloc.add(const AuthCheckStatusEvent());
-    
-    return MultiBlocProvider(
-      providers: [
-        // Auth BLoC
-        BlocProvider<AuthBloc>(
-          create: (context) => authBloc,
-        ),
-        
-        // Discover BLoC
-        BlocProvider<DiscoverBloc>(
-          create: (context) => DiscoverBloc(
-            connectionsRepository: ServiceLocator.connectionsRepository,
-            logger: AppLogger.instance,
-          ),
-        ),
-        
-        // Notification BLoC
-        BlocProvider<NotificationBloc>(
-          create: (context) => NotificationBloc(
-            notificationRepository: ServiceLocator.notificationRepository,
-            logger: AppLogger.instance,
-          ),
-        ),
-        
-        // Additional BLoCs can be added here
-      ],
-      child: BondApp(), 
-    );
+    print('Firebase initialized successfully');
+  } catch (e) {
+    print('Failed to initialize Firebase: $e');
+    // Continue anyway for development purposes
   }
+  
+  // Initialize service locator
+  await ServiceLocator.initialize();
+  
+  // Create a test account for development
+  final firebaseAuthService = ServiceLocator.getIt<FirebaseAuthService>();
+  try {
+    await firebaseAuthService.createTestAccount();
+    print('Test account created/verified successfully');
+  } catch (e) {
+    print('Error creating test account: $e');
+  }
+  
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(
+          create: (context) => AuthBloc(
+            authRepository: ServiceLocator.getIt<AuthRepository>(),
+          ),
+        ),
+        BlocProvider<MeetingBloc>(
+          create: (context) => MeetingBloc(
+            meetingRepository: ServiceLocator.getIt<MeetingRepository>(),
+          ),
+        ),
+        BlocProvider<NfcVerificationBloc>(
+          create: (context) => NfcVerificationBloc(
+            nfcRepository: ServiceLocator.getIt<NfcVerificationRepositoryInterface>(),
+          ),
+        ),
+      ],
+      child: BondApp(),
+    ),
+  );
 }

@@ -36,11 +36,28 @@ class DummyAccountService {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 1));
     
-    final user = _users[email];
-    if (user != null && user.password == password) {
-      return user;
+    try {
+      // Print debug info
+      print('Attempting login with: $email / $password');
+      print('Available users: ${_users.keys.join(', ')}');
+      
+      final user = _users[email];
+      if (user != null) {
+        print('User found: ${user.displayName}');
+        if (user.password == password) {
+          print('Password match, login successful');
+          return user;
+        } else {
+          print('Password mismatch');
+        }
+      } else {
+        print('User not found');
+      }
+      return null;
+    } catch (e) {
+      print('Error during login: $e');
+      return null;
     }
-    return null;
   }
 
   // Register a new user

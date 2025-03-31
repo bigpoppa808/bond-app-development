@@ -8,6 +8,7 @@ import '../../../../core/design/components/bond_badge.dart';
 import '../../../../core/design/components/bond_chip.dart';
 import '../../../auth/data/dummy_account_service.dart';
 
+/// Demo home screen for testing purposes
 class DemoHomeScreen extends StatelessWidget {
   const DemoHomeScreen({Key? key}) : super(key: key);
 

@@ -1,119 +1,170 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fresh_bond_app/app/presentation/screens/main_shell.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_bloc.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_state.dart';
-import 'package:fresh_bond_app/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:fresh_bond_app/core/di/service_locator.dart';
+import 'package:fresh_bond_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:fresh_bond_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fresh_bond_app/features/auth/presentation/screens/login_screen.dart';
-import 'package:fresh_bond_app/features/auth/presentation/screens/signup_screen.dart';
-import 'package:fresh_bond_app/features/auth/presentation/screens/demo_login_screen.dart';
-import 'package:fresh_bond_app/features/home/presentation/screens/demo_home_screen.dart';
-import 'package:fresh_bond_app/features/notifications/presentation/screens/notifications_screen_v2.dart';
-import 'package:fresh_bond_app/features/showcase/presentation/screens/design_system_showcase.dart';
-import 'package:fresh_bond_app/features/splash/presentation/screens/splash_screen.dart';
+import 'package:fresh_bond_app/features/discover/presentation/screens/discover_screen.dart';
+import 'package:fresh_bond_app/features/home/presentation/screens/home_screen.dart';
+import 'package:fresh_bond_app/features/meetings/domain/blocs/meeting_bloc.dart';
+import 'package:fresh_bond_app/features/meetings/domain/blocs/meeting_event.dart';
+import 'package:fresh_bond_app/features/meetings/domain/blocs/meeting_state.dart';
+import 'package:fresh_bond_app/features/meetings/presentation/screens/meeting_details_screen.dart';
+import 'package:fresh_bond_app/features/meetings/presentation/screens/meeting_form_screen.dart';
+import 'package:fresh_bond_app/features/meetings/presentation/screens/meetings_screen.dart';
+import 'package:fresh_bond_app/features/messages/presentation/screens/messages_screen.dart';
+import 'package:fresh_bond_app/features/notifications/presentation/screens/notifications_screen.dart';
+import 'package:fresh_bond_app/features/profile/presentation/screens/profile_screen.dart';
 import 'package:go_router/go_router.dart';
 
-/// Manages the application's routing using GoRouter
+/// Router configuration for the app
 class AppRouter {
-  final AuthBloc _authBloc;
-
-  AppRouter(this._authBloc);
-
-  /// Get the router instance
-  GoRouter get router => _router;
-
-  /// Router redirects
-  String? _authGuard(BuildContext context, GoRouterState state) {
-    // TESTING ONLY: Authentication bypass
-    // Commenting out auth guard to allow direct access to all screens for testing purposes
-    // TODO: Re-enable auth guard for production
-    return null;
+  static final AuthRepository _authRepository = ServiceLocator.getIt<AuthRepository>();
+  
+  /// Create the router
+  static GoRouter createRouter() {
+    return GoRouter(
+      initialLocation: '/',
+      debugLogDiagnostics: true,
+      redirect: _handleRedirect,
+      routes: [
+        // Auth routes
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginScreen(),
+        ),
+        
+        // Main app shell with nested routes
+        ShellRoute(
+          builder: (context, state, child) => MainShell(child: child),
+          routes: [
+            // Home route
+            GoRoute(
+              path: '/home',
+              builder: (context, state) => const HomeScreen(),
+            ),
+            
+            // Discover route
+            GoRoute(
+              path: '/discover',
+              builder: (context, state) => const DiscoverScreen(),
+            ),
+            
+            // Messages route
+            GoRoute(
+              path: '/messages',
+              builder: (context, state) => const MessagesScreen(),
+            ),
+            
+            // Notifications route
+            GoRoute(
+              path: '/notifications',
+              builder: (context, state) => const NotificationsScreen(),
+            ),
+            
+            // Profile route
+            GoRoute(
+              path: '/profile',
+              builder: (context, state) => const ProfileScreen(),
+            ),
+            
+            // Meetings route
+            GoRoute(
+              path: '/meetings',
+              builder: (context, state) => const MeetingsScreen(),
+            ),
+            
+            // Meeting details route
+            GoRoute(
+              path: '/meetings/details',
+              builder: (context, state) {
+                final meetingId = state.uri.queryParameters['id'] ?? '';
+                if (meetingId.isEmpty) {
+                  return const Scaffold(body: Center(child: Text('Meeting ID is required')));
+                }
+                return MeetingDetailsScreen(meetingId: meetingId);
+              },
+            ),
+            
+            // Create meeting route
+            GoRoute(
+              path: '/meetings/create',
+              builder: (context, state) {
+                final connectionId = state.uri.queryParameters['connectionId'];
+                return MeetingFormScreen(connectionId: connectionId);
+              },
+            ),
+            
+            // Edit meeting route
+            GoRoute(
+              path: '/meetings/edit',
+              builder: (context, state) {
+                final meetingId = state.uri.queryParameters['id'] ?? '';
+                if (meetingId.isEmpty) {
+                  return const Scaffold(body: Center(child: Text('Meeting ID is required')));
+                }
+                // We need to fetch the meeting before navigating to the edit screen
+                // This would typically be handled in the UI layer
+                return BlocBuilder<MeetingBloc, MeetingState>(
+                  builder: (context, state) {
+                    if (state is MeetingLoadedState) {
+                      return MeetingFormScreen(meetingToEdit: state.meeting);
+                    }
+                    
+                    // If meeting is not loaded, return a loading screen
+                    // and dispatch the load event
+                    if (state is! MeetingLoadingState) {
+                      context.read<MeetingBloc>().add(LoadMeetingEvent(meetingId));
+                    }
+                    
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+        
+        // Redirect root to home or login
+        GoRoute(
+          path: '/',
+          redirect: (context, state) async {
+            final isSignedIn = await _authRepository.isSignedIn();
+            return isSignedIn ? '/home' : '/login';
+          },
+        ),
+      ],
+    );
+  }
+  
+  /// Handle redirects based on authentication state
+  static Future<String?> _handleRedirect(BuildContext context, GoRouterState state) async {
+    // Get the current auth state
+    final isSignedIn = await _authRepository.isSignedIn();
     
-    /*
-    final authState = _authBloc.state;
-    final isLoggedIn = authState is AuthAuthenticatedState;
+    // Get the current path
+    final path = state.matchedLocation;
     
-    // List of auth routes that don't need redirection
-    final isAuthRoute = state.matchedLocation == '/login' || 
-                        state.matchedLocation == '/signup' || 
-                        state.matchedLocation == '/forgot-password';
-    
-    // If not authenticated and not already on auth route, redirect to login
-    if (!isLoggedIn && !isAuthRoute && state.matchedLocation != '/splash') {
+    // If the user is not signed in and trying to access protected routes
+    if (!isSignedIn && 
+        !path.startsWith('/login') && 
+        !path.startsWith('/signup') && 
+        !path.startsWith('/forgot-password')) {
       return '/login';
     }
     
-    // If authenticated and on auth route, redirect to home
-    if (isLoggedIn && isAuthRoute) {
+    // If the user is signed in and trying to access auth routes
+    if (isSignedIn && 
+        (path.startsWith('/login') || 
+         path.startsWith('/signup') || 
+         path.startsWith('/forgot-password'))) {
       return '/home';
     }
     
-    // No redirection needed
+    // No redirect needed
     return null;
-    */
   }
-
-  /// Define the router configuration
-  late final GoRouter _router = GoRouter(
-    initialLocation: '/demo-login', 
-    debugLogDiagnostics: true,
-    redirect: _authGuard,
-    routes: [
-      // Splash and onboarding
-      GoRoute(
-        path: '/splash',
-        builder: (context, state) => const SplashScreen(),
-      ),
-      
-      // Auth routes
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/signup',
-        builder: (context, state) => const SignupScreen(),
-      ),
-      GoRoute(
-        path: '/forgot-password',
-        builder: (context, state) => const ForgotPasswordScreen(),
-      ),
-      
-      // Demo routes
-      GoRoute(
-        path: '/demo-login',
-        builder: (context, state) => const DemoLoginScreen(),
-      ),
-      GoRoute(
-        path: '/demo-home',
-        builder: (context, state) => const DemoHomeScreen(),
-      ),
-      
-      // Main app routes - using the shell
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const DemoHomeScreen(), // Use demo home screen for now
-      ),
-      GoRoute(
-        path: '/discover',
-        builder: (context, state) => const MainShell(initialIndex: 1),
-      ),
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => const MainShell(initialIndex: 2),
-      ),
-      
-      // Other screens
-      GoRoute(
-        path: '/notifications',
-        builder: (context, state) => const NotificationsScreenV2(),
-      ),
-      
-      // Design System Showcase
-      GoRoute(
-        path: '/showcase',
-        builder: (context, state) => const DesignSystemShowcase(),
-      ),
-    ],
-  );
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/design/bond_colors.dart';
 import '../../../../core/design/bond_typography.dart';
 import '../../../../core/design/components/bond_button.dart';
 import '../../../../core/design/components/bond_input.dart';
 import '../../data/dummy_account_service.dart';
 
+/// Demo login screen for testing purposes
 class DemoLoginScreen extends StatefulWidget {
   const DemoLoginScreen({Key? key}) : super(key: key);
 
@@ -13,11 +15,19 @@ class DemoLoginScreen extends StatefulWidget {
 }
 
 class _DemoLoginScreenState extends State<DemoLoginScreen> {
-  final _emailController = TextEditingController(text: 'demo@bond.app');
-  final _passwordController = TextEditingController(text: 'password123');
-  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _emailController;
+  late TextEditingController _passwordController;
+  late GlobalKey<FormState> _formKey;
   bool _isLoading = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController(text: 'demo@bond.app');
+    _passwordController = TextEditingController(text: 'password123');
+    _formKey = GlobalKey<FormState>();
+  }
 
   @override
   void dispose() {
@@ -49,8 +59,8 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
       if (user != null) {
         if (!mounted) return;
         
-        // Navigate to home screen on successful login
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Navigate to home screen on successful login using GoRouter
+        GoRouter.of(context).go('/demo-home');
         
         // Show a welcome toast
         ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +74,7 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
           _errorMessage = 'Invalid email or password';
         });
       }
-    } catch (e) {
+    } on Exception catch (e) {
       setState(() {
         _errorMessage = 'An error occurred. Please try again.';
       });
@@ -95,10 +105,10 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
                   Center(
                     child: Column(
                       children: [
-                        Image.asset(
-                          'assets/images/bond_logo.png',
-                          height: 80,
-                          width: 80,
+                        Icon(
+                          Icons.favorite,
+                          size: 80,
+                          color: BondColors.bondTeal,
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -194,7 +204,7 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        Navigator.of(context).pushNamed('/register');
+                        GoRouter.of(context).go('/register');
                       },
                       child: Text(
                         'Don\'t have an account? Sign up',

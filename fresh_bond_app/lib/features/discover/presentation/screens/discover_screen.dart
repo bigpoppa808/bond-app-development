@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fresh_bond_app/app/theme.dart';
-import 'package:fresh_bond_app/core/analytics/analytics_service.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_colors.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_spacing.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_typography.dart';
 import 'package:fresh_bond_app/features/discover/domain/blocs/discover_bloc.dart';
 import 'package:fresh_bond_app/features/discover/domain/blocs/discover_event.dart';
 import 'package:fresh_bond_app/features/discover/domain/blocs/discover_state.dart';
@@ -26,9 +27,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> with SingleTickerProvid
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     
-    // Track screen view
-    AnalyticsService.instance.logScreen('discover');
-    
     // Load initial data
     _loadInitialData();
   }
@@ -51,7 +49,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> with SingleTickerProvid
       context.read<DiscoverBloc>().add(SearchConnectionsEvent(query));
     }
   }
-  
+
   void _clearSearch() {
     _searchController.clear();
     context.read<DiscoverBloc>().add(const ClearSearchEvent());
@@ -72,10 +70,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BondAppTheme.backgroundPrimary,
+      backgroundColor: BondColors.background,
       appBar: AppBar(
         title: const Text('Discover'),
-        backgroundColor: BondAppTheme.backgroundSecondary,
+        backgroundColor: BondColors.backgroundSecondary,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
@@ -134,14 +132,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> with SingleTickerProvid
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Text('Connection request sent!'),
-                    backgroundColor: BondAppTheme.successColor,
+                    backgroundColor: BondColors.success,
                   ),
                 );
               } else if (state is DiscoverErrorState) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.message),
-                    backgroundColor: BondAppTheme.errorColor,
+                    backgroundColor: BondColors.error,
                   ),
                 );
               }
@@ -167,7 +165,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> with SingleTickerProvid
                     children: [
                       const Icon(
                         Icons.error_outline,
-                        color: BondAppTheme.errorColor,
+                        color: BondColors.error,
                         size: 48,
                       ),
                       const SizedBox(height: 16),
@@ -200,7 +198,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> with SingleTickerProvid
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Connection request accepted!'),
-              backgroundColor: BondAppTheme.successColor,
+              backgroundColor: BondColors.success,
             ),
           );
         } else if (state is ConnectionRequestRejectedState) {
@@ -214,26 +212,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> with SingleTickerProvid
       builder: (context, state) {
         if (state is PendingRequestsLoadedState) {
           if (state.pendingRequests.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.mark_email_read,
-                    color: BondAppTheme.textSecondary,
-                    size: 64,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No pending requests',
-                    style: TextStyle(
-                      color: BondAppTheme.textSecondary,
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-            );
+            return _buildEmptyPendingRequestsState();
           }
           
           return ListView.builder(
@@ -261,39 +240,61 @@ class _DiscoverScreenState extends State<DiscoverScreen> with SingleTickerProvid
     );
   }
   
+  Widget _buildEmptyPendingRequestsState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.mark_email_read,
+            color: BondColors.textSecondary,
+            size: 64,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No pending requests',
+            style: TextStyle(
+              color: BondColors.textSecondary,
+              fontSize: 18,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyConnectionsState({bool isSearchResult = false}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            isSearchResult ? Icons.search_off : Icons.people_outline,
+            color: BondColors.textSecondary,
+            size: 64,
+          ),
+          const SizedBox(height: 16),
+          Text(
+              isSearchResult
+                  ? 'No results found'
+                  : 'No recommendations available',
+              style: TextStyle(
+                color: BondColors.textSecondary,
+                fontSize: 18,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildConnectionsList(
     List<ConnectionModel> connections, {
     required String title,
     bool isSearchResult = false,
   }) {
     if (connections.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isSearchResult ? Icons.search_off : Icons.people_outline,
-              color: BondAppTheme.textSecondary,
-              size: 64,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              isSearchResult
-                  ? 'No results found'
-                  : 'No recommendations available',
-              style: TextStyle(
-                color: BondAppTheme.textSecondary,
-                fontSize: 18,
-              ),
-            ),
-            if (isSearchResult)
-              TextButton(
-                onPressed: _clearSearch,
-                child: const Text('Clear Search'),
-              ),
-          ],
-        ),
-      );
+      return _buildEmptyConnectionsState(isSearchResult: isSearchResult);
     }
     
     return ListView.builder(
@@ -306,7 +307,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> with SingleTickerProvid
             padding: const EdgeInsets.only(bottom: 16.0),
             child: Text(
               title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: BondTypography.heading2.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),

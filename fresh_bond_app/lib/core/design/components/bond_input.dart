@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../bond_colors.dart';
-import '../bond_typography.dart';
-import '../bond_design_system.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_colors.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_typography.dart';
+import 'package:fresh_bond_app/core/design/system/bond_design_system.dart';
 
 /// Input field variants
 enum BondInputVariant {
@@ -86,6 +86,9 @@ class BondInput extends StatefulWidget {
   /// Minimum number of lines for multiline input
   final int? minLines;
   
+  /// Validator function
+  final String? Function(String?)? validator;
+
   /// Constructor
   const BondInput({
     Key? key,
@@ -109,6 +112,7 @@ class BondInput extends StatefulWidget {
     this.autofocus = false,
     this.maxLines = 1,
     this.minLines,
+    this.validator,
   }) : super(key: key);
 
   @override
@@ -152,19 +156,19 @@ class _BondInputState extends State<BondInput> {
     // Determine colors based on state and variant
     final Color backgroundColor;
     final Color borderColor;
-    final BorderRadius borderRadius = BorderRadius.circular(BondDesignSystem.tokens.radiusM);
+    final BorderRadius borderRadius = BorderRadius.circular(12.0);
     
     if (hasError) {
       borderColor = BondColors.error;
       backgroundColor = BondColors.error.withOpacity(0.05);
     } else if (!widget.enabled) {
-      borderColor = isDark ? BondColors.slate.withOpacity(0.3) : BondColors.cloud;
-      backgroundColor = isDark ? BondColors.slate.withOpacity(0.1) : BondColors.snow;
+      borderColor = isDark ? BondColors.slate.withOpacity(0.3) : BondColors.divider;
+      backgroundColor = isDark ? BondColors.slate.withOpacity(0.1) : BondColors.backgroundSecondary;
     } else if (_isFocused) {
-      borderColor = BondColors.bondTeal;
+      borderColor = BondColors.primary;
       backgroundColor = isDark ? Colors.black.withOpacity(0.3) : Colors.white;
     } else {
-      borderColor = isDark ? BondColors.slate.withOpacity(0.5) : BondColors.cloud;
+      borderColor = isDark ? BondColors.slate.withOpacity(0.5) : BondColors.divider;
       backgroundColor = isDark ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.8);
     }
     
@@ -182,10 +186,10 @@ class _BondInputState extends State<BondInput> {
       autofocus: widget.autofocus,
       maxLines: widget.maxLines,
       minLines: widget.minLines,
-      style: BondTypography.body(context),
+      style: BondTypography.body1,
       decoration: InputDecoration(
         hintText: widget.placeholder,
-        hintStyle: BondTypography.body(context).copyWith(
+        hintStyle: BondTypography.body1.copyWith(
           color: isDark ? BondColors.slate.withOpacity(0.7) : BondColors.slate.withOpacity(0.5),
         ),
         prefixIcon: widget.prefixIcon,
@@ -241,7 +245,6 @@ class _BondInputState extends State<BondInput> {
         break;
         
       case BondInputVariant.outlined:
-      default:
         styledInput = Container(
           decoration: BoxDecoration(
             color: Colors.transparent,
@@ -261,7 +264,7 @@ class _BondInputState extends State<BondInput> {
         if (widget.label != null) ...[
           Text(
             widget.label!,
-            style: BondTypography.caption(context).copyWith(
+            style: BondTypography.caption.copyWith(
               color: hasError ? BondColors.error : null,
             ),
           ),
@@ -280,8 +283,8 @@ class _BondInputState extends State<BondInput> {
           const SizedBox(height: 4),
           Text(
             widget.helperText!,
-            style: BondTypography.caption(context).copyWith(
-              color: isDark ? BondColors.cloud : BondColors.slate,
+            style: BondTypography.caption.copyWith(
+              color: isDark ? BondColors.textDark : BondColors.slate,
             ),
           ),
         ],
@@ -290,7 +293,7 @@ class _BondInputState extends State<BondInput> {
           const SizedBox(height: 4),
           Text(
             widget.errorText!,
-            style: BondTypography.caption(context).copyWith(
+            style: BondTypography.caption.copyWith(
               color: BondColors.error,
             ),
           ),

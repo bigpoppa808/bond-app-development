@@ -360,9 +360,30 @@ Implement features in this order to ensure stable progress:
 - Meeting scheduling
 
 ### 5.6 Advanced Features
-- NFC verification
-- Token economy
-- Donor management
+
+#### 5.6.1 NFC Verification Feature
+- Implemented NFC scanning for meeting verification
+- Uses `nfc_manager` package (`^3.3.0`)
+- Requires iOS-specific configuration:
+  - Add `NFCReaderUsageDescription` to Info.plist
+  - Add `com.apple.developer.nfc.readersession.formats` capability with `TAG` value
+  - Requires iOS 13.0+
+  - Supports reading NDEF tags
+- Key components:
+  - `NfcVerificationRepository`: Handles NFC operations
+  - `NfcVerificationBloc`: Manages NFC scanning state
+  - `NfcVerificationScreen`: UI for scanning process
+  - Integration with meetings feature for verification
+
+#### 5.6.2 Token Economy (To Be Implemented)
+- Digital token system for app engagement
+- Reward mechanism for completed meetings
+- Integration with verification system
+
+#### 5.6.3 Donor Management (To Be Implemented)
+- Donor profiles and management
+- Donation tracking and insights
+- Integration with token economy
 
 ## 6. Testing Guidelines
 

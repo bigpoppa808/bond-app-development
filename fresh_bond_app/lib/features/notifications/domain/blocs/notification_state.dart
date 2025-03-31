@@ -70,6 +70,16 @@ class AllNotificationsDeletedState extends NotificationState {
   const AllNotificationsDeletedState();
 }
 
+/// Success state for notification actions
+class NotificationActionSuccessState extends NotificationState {
+  final String message;
+  
+  const NotificationActionSuccessState(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
 /// Error state
 class NotificationErrorState extends NotificationState {
   final String message;

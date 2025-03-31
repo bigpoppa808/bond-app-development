@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../bond_colors.dart';
-import '../bond_design_system.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_colors.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_typography.dart';
 
 /// Avatar sizes
 enum BondAvatarSize {
@@ -111,9 +111,9 @@ class BondAvatar extends StatelessWidget {
     final statusSize = actualSize * 0.3 > 0 ? actualSize * 0.3 : 8.0; // Ensure positive value
     
     // Determine colors
-    final defaultBorderColor = isDark ? BondColors.night : Colors.white;
+    final defaultBorderColor = isDark ? Colors.black : Colors.white;
     final actualBorderColor = borderColor ?? defaultBorderColor;
-    final defaultBackgroundColor = _getDefaultBackgroundColor(context);
+    final defaultBackgroundColor = _getAvatarColorFromInitials(initials);
     final actualBackgroundColor = backgroundColor ?? defaultBackgroundColor;
     
     // Build the avatar content
@@ -251,14 +251,25 @@ class BondAvatar extends StatelessWidget {
     }
   }
   
-  /// Get default background color based on initials
-  Color _getDefaultBackgroundColor(BuildContext context) {
-    if (initials == null || initials!.isEmpty) {
-      return BondColors.slate;
+  /// Get a color based on initials
+  Color _getAvatarColorFromInitials(String? initials) {
+    if (initials == null || initials.isEmpty) {
+      return BondColors.primary;
     }
     
-    // Generate a consistent color based on the initials
-    final colorIndex = initials!.codeUnitAt(0) % BondDesignSystem.tokens.avatarColors.length;
-    return BondDesignSystem.tokens.avatarColors[colorIndex];
+    // List of avatar colors
+    final List<Color> avatarColors = [
+      BondColors.primary,
+      BondColors.secondary,
+      BondColors.info,
+      BondColors.success,
+      BondColors.warning,
+      Colors.purple,
+      Colors.teal,
+      Colors.indigo,
+    ];
+    
+    final colorIndex = initials.codeUnitAt(0) % avatarColors.length;
+    return avatarColors[colorIndex];
   }
 }

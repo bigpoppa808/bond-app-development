@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fresh_bond_app/app/theme.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_bloc.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_event.dart';
-import 'package:fresh_bond_app/features/auth/domain/blocs/auth_state.dart';
-import 'package:fresh_bond_app/shared/widgets/bond_button.dart';
-import 'package:fresh_bond_app/shared/widgets/bond_text_field.dart';
+import 'package:fresh_bond_app/core/design/components/bond_button.dart';
+import 'package:fresh_bond_app/core/design/components/bond_input.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_colors.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_spacing.dart';
+import 'package:fresh_bond_app/core/design/theme/bond_typography.dart';
+import 'package:fresh_bond_app/core/di/service_locator.dart';
+import 'package:fresh_bond_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:fresh_bond_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController(text: 'test@bond.app');
+  final _passwordController = TextEditingController(text: 'Test123!');
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -28,198 +31,224 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _togglePasswordVisibility() {
-    setState(() {
-      _obscurePassword = !_obscurePassword;
-    });
-  }
+  void _login() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  void _handleLogin() {
-    if (_formKey.currentState?.validate() ?? false) {
-      context.read<AuthBloc>().add(
-            AuthSignInEvent(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final authRepository = ServiceLocator.getIt<AuthRepository>();
+      await authRepository.signIn(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+      
+      if (mounted) {
+        context.go('/home');
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  void _navigateToSignUp() {
-    context.go('/signup');
-  }
+  void _createTestAccount() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-  void _handleForgotPassword() {
-    if (_emailController.text.trim().isNotEmpty) {
-      context.read<AuthBloc>().add(
-            AuthForgotPasswordEvent(email: _emailController.text.trim()),
-          );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your email address first'),
-        ),
-      );
+    try {
+      final authRepository = ServiceLocator.getIt<AuthRepository>();
+      await authRepository.signIn('test@bond.app', 'Test123!');
+      
+      if (mounted) {
+        context.go('/home');
+      }
+    } catch (e) {
+      // If login fails, try to create a test account
+      try {
+        final authRepository = ServiceLocator.getIt<AuthRepository>();
+        await authRepository.signUp('test@bond.app', 'Test123!');
+        
+        if (mounted) {
+          context.go('/home');
+        }
+      } catch (e) {
+        setState(() {
+          _errorMessage = e.toString();
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BondAppTheme.backgroundPrimary,
-      body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: BondAppTheme.errorColor,
-              ),
-            );
-          } else if (state is AuthAuthenticatedState) {
-            context.go('/home');
-          } else if (state is AuthPasswordResetSentState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Password reset email sent to ${state.email}',
-                ),
-                backgroundColor: BondAppTheme.successColor,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          return SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
+      backgroundColor: BondColors.background,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(BondSpacing.lg),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Logo and app name
+                  const Center(
+                    child: Icon(
+                      Icons.favorite_rounded,
+                      color: BondColors.primary,
+                      size: 80,
+                    ),
+                  ),
+                  const SizedBox(height: BondSpacing.md),
+                  Center(
+                    child: Text(
+                      'Bond',
+                      style: BondTypography.heading1.copyWith(
+                        color: BondColors.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: BondSpacing.xl),
+                  
+                  // Login form
+                  BondInput(
+                    controller: _emailController,
+                    label: 'Email',
+                    placeholder: 'Enter your email',
+                    keyboardType: TextInputType.emailAddress,
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: BondSpacing.md),
+                  BondInput(
+                    controller: _passwordController,
+                    label: 'Password',
+                    placeholder: 'Enter your password',
+                    obscureText: true,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: BondSpacing.sm),
+                  
+                  // Forgot password
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        // TODO: Implement forgot password
+                      },
+                      child: Text(
+                        'Forgot Password?',
+                        style: BondTypography.body2.copyWith(
+                          color: BondColors.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: BondSpacing.md),
+                  
+                  // Error message
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(BondSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: BondColors.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _errorMessage!,
+                        style: BondTypography.body2.copyWith(
+                          color: BondColors.error,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: BondSpacing.md),
+                  ],
+                  
+                  // Login button
+                  BondButton(
+                    label: 'Login',
+                    onPressed: _isLoading ? null : _login,
+                    isLoading: _isLoading,
+                    fullWidth: true,
+                  ),
+                  const SizedBox(height: BondSpacing.md),
+                  
+                  // Test account button
+                  BondButton(
+                    label: 'Use Test Account',
+                    onPressed: _isLoading ? null : _createTestAccount,
+                    isLoading: _isLoading,
+                    fullWidth: true,
+                    variant: BondButtonVariant.secondary,
+                  ),
+                  const SizedBox(height: BondSpacing.xl),
+                  
+                  // Sign up link
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Logo and app name
-                      const Icon(
-                        Icons.favorite,
-                        color: BondAppTheme.primaryColor,
-                        size: 64,
-                      ),
-                      const SizedBox(height: 16),
                       Text(
-                        'Bond',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                              color: BondAppTheme.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        'Don\'t have an account?',
+                        style: BondTypography.body2,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Connect with meaningful relationships',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: BondAppTheme.textSecondary,
-                            ),
-                      ),
-                      const SizedBox(height: 48),
-
-                      // Email field
-                      BondTextField(
-                        label: 'Email',
-                        hint: 'Enter your email',
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        prefixIcon: Icons.email_outlined,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                            return 'Please enter a valid email';
-                          }
-                          return null;
+                      TextButton(
+                        onPressed: () {
+                          // TODO: Navigate to sign up screen
                         },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Password field
-                      BondTextField(
-                        label: 'Password',
-                        hint: 'Enter your password',
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        prefixIcon: Icons.lock_outline,
-                        suffixIcon: _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        onSuffixIconPressed: _togglePasswordVisibility,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Forgot password
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: _handleForgotPassword,
-                          child: Text(
-                            'Forgot Password?',
-                            style: TextStyle(
-                              color: BondAppTheme.primaryColor,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        child: Text(
+                          'Sign Up',
+                          style: BondTypography.body2.copyWith(
+                            color: BondColors.primary,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
-
-                      // Login button
-                      BondButton(
-                        text: 'Login',
-                        isLoading: state is AuthLoadingState,
-                        onPressed: _handleLogin,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Sign up link
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Don\'t have an account?',
-                            style: TextStyle(
-                              color: BondAppTheme.textSecondary,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _navigateToSignUp,
-                            child: Text(
-                              'Sign Up',
-                              style: TextStyle(
-                                color: BondAppTheme.primaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
-                ),
+                ],
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
