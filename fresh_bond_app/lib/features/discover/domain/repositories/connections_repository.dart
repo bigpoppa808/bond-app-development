@@ -22,4 +22,7 @@ abstract class ConnectionsRepository {
   
   /// Get all connections for the current user
   Future<List<ConnectionModel>> getConnections();
+  
+  /// Get count of connections for a user
+  Future<int> getConnectionCount(String userId);
 }

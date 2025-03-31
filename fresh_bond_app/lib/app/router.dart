@@ -16,6 +16,8 @@ import 'package:fresh_bond_app/features/meetings/presentation/screens/meetings_s
 import 'package:fresh_bond_app/features/messages/presentation/screens/messages_screen.dart';
 import 'package:fresh_bond_app/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:fresh_bond_app/features/profile/presentation/screens/profile_screen.dart';
+import 'package:fresh_bond_app/features/token_economy/presentation/screens/achievements_screen.dart';
+import 'package:fresh_bond_app/features/token_economy/presentation/screens/token_wallet_screen.dart';
 import 'package:go_router/go_router.dart';
 
 /// Router configuration for the app
@@ -124,6 +126,18 @@ class AppRouter {
                   },
                 );
               },
+            ),
+            
+            // Token wallet route
+            GoRoute(
+              path: '/tokens',
+              builder: (context, state) => const TokenWalletScreen(),
+            ),
+            
+            // Achievements route
+            GoRoute(
+              path: '/achievements',
+              builder: (context, state) => const AchievementsScreen(),
             ),
           ],
         ),

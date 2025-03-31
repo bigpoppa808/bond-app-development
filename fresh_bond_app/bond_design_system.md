@@ -175,10 +175,11 @@ Using a fluid type scale based on a 1.2 ratio for mobile and 1.25 for larger scr
 
 5. **BondVerificationCard**
    - NFC scan animation with ripple effect
-   - Status indicators (scanning, success, error)
-   - Color-coded feedback for verification states
-   - Progress visualization for multi-step processes
-   - Device proximity indication
+   - Dynamic status indicators (initializing, scanning, detected, verifying, success, error)
+   - Color-coded feedback with icon indicators for different verification states
+   - Progress visualization with BondProgressIndicator integration
+   - Device proximity indication with visual feedback
+   - Context-specific action buttons based on current verification state
 
 ## Motion and Animation
 

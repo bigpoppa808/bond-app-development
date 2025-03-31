@@ -465,4 +465,22 @@ class MeetingRepositoryImpl implements MeetingRepository {
       throw _errorHandler.handleError(e);
     }
   }
+  
+  @override
+  Future<int> getCompletedMeetingsCount(String userId) async {
+    try {
+      _logger.d('Getting completed meetings count for user: $userId');
+      
+      final snapshot = await _meetingsCollection
+          .where('participants', arrayContains: userId)
+          .where('status', isEqualTo: MeetingStatus.completed.name)
+          .count()
+          .get();
+      
+      return snapshot.count ?? 0;
+    } catch (e, stackTrace) {
+      _logger.e('Error getting completed meetings count', error: e, stackTrace: stackTrace);
+      return 0; // Return 0 instead of throwing to avoid crashing the app
+    }
+  }
 }

@@ -199,4 +199,18 @@ class ConnectionsRepositoryImpl implements ConnectionsRepository {
       ),
     ];
   }
+  
+  @override
+  Future<int> getConnectionCount(String userId) async {
+    try {
+      _logger.d('Getting connection count for user: $userId');
+      
+      // In a real implementation, this would fetch from an API
+      // For now, return a count from the mock data
+      return _getMockConnections().where((conn) => conn.isConnected).length;
+    } catch (e, stackTrace) {
+      _logger.e('Error getting connection count', error: e, stackTrace: stackTrace);
+      return 0; // Return 0 instead of throwing to avoid crashing the app
+    }
+  }
 }

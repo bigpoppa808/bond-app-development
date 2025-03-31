@@ -41,4 +41,7 @@ abstract class MeetingRepository {
   
   /// Mark a meeting as completed
   Future<MeetingModel> completeMeeting(String meetingId);
+  
+  /// Get count of completed meetings for a user
+  Future<int> getCompletedMeetingsCount(String userId);
 }

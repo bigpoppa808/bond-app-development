@@ -15,6 +15,13 @@ import 'package:fresh_bond_app/features/meetings/domain/repositories/meeting_rep
 import 'package:fresh_bond_app/features/meetings/domain/repositories/nfc_verification_repository_interface.dart';
 import 'package:fresh_bond_app/features/notifications/data/repositories/notification_repository_impl.dart';
 import 'package:fresh_bond_app/features/notifications/domain/repositories/notification_repository.dart';
+import 'package:fresh_bond_app/features/token_economy/data/repositories/achievement_repository_impl.dart';
+import 'package:fresh_bond_app/features/token_economy/data/repositories/token_repository_impl.dart';
+import 'package:fresh_bond_app/features/token_economy/data/services/achievement_service.dart';
+import 'package:fresh_bond_app/features/token_economy/domain/blocs/achievement_bloc.dart';
+import 'package:fresh_bond_app/features/token_economy/domain/blocs/token_bloc.dart';
+import 'package:fresh_bond_app/features/token_economy/domain/repositories/achievement_repository.dart';
+import 'package:fresh_bond_app/features/token_economy/domain/repositories/token_repository.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -112,6 +119,51 @@ class ServiceLocator {
         ),
       );
     }
+    
+    // Register Token Economy components
+    
+    // Register AchievementService
+    _locator.registerSingleton<AchievementService>(
+      AchievementService(
+        logger: _locator<AppLogger>(),
+      ),
+    );
+    
+    // Register TokenRepository
+    _locator.registerSingleton<TokenRepository>(
+      TokenRepositoryImpl(
+        firestore: FirebaseFirestore.instance,
+        authRepository: _locator<AuthRepository>(),
+        meetingRepository: _locator<MeetingRepository>(),
+        connectionsRepository: _locator<ConnectionsRepository>(),
+        logger: _locator<AppLogger>(),
+        errorHandler: _locator<ErrorHandler>(),
+      ),
+    );
+    
+    // Register AchievementRepository
+    _locator.registerSingleton<AchievementRepository>(
+      AchievementRepositoryImpl(
+        firestore: FirebaseFirestore.instance,
+        achievementService: _locator<AchievementService>(),
+        logger: _locator<AppLogger>(),
+        errorHandler: _locator<ErrorHandler>(),
+      ),
+    );
+    
+    // Register TokenBloc
+    _locator.registerFactory<TokenBloc>(
+      () => TokenBloc(
+        tokenRepository: _locator<TokenRepository>(),
+      ),
+    );
+    
+    // Register AchievementBloc
+    _locator.registerFactory<AchievementBloc>(
+      () => AchievementBloc(
+        achievementRepository: _locator<AchievementRepository>(),
+      ),
+    );
   }
   
   /// Get the auth repository
@@ -128,6 +180,18 @@ class ServiceLocator {
   
   /// Get the NFC verification repository
   static NfcVerificationRepositoryInterface get nfcVerificationRepository => _locator<NfcVerificationRepositoryInterface>();
+  
+  /// Get the token repository
+  static TokenRepository get tokenRepository => _locator<TokenRepository>();
+  
+  /// Get the achievement repository
+  static AchievementRepository get achievementRepository => _locator<AchievementRepository>();
+  
+  /// Get the token bloc
+  static TokenBloc get tokenBloc => _locator<TokenBloc>();
+  
+  /// Get the achievement bloc
+  static AchievementBloc get achievementBloc => _locator<AchievementBloc>();
   
   /// Reset the service locator (useful for testing)
   static void reset() {

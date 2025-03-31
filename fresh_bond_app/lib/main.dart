@@ -11,6 +11,12 @@ import 'package:fresh_bond_app/features/meetings/domain/blocs/meeting_bloc.dart'
 import 'package:fresh_bond_app/features/meetings/domain/blocs/nfc_verification/nfc_verification_bloc.dart';
 import 'package:fresh_bond_app/features/meetings/domain/repositories/meeting_repository.dart';
 import 'package:fresh_bond_app/features/meetings/domain/repositories/nfc_verification_repository_interface.dart';
+import 'package:fresh_bond_app/features/notifications/domain/blocs/notification_bloc.dart';
+import 'package:fresh_bond_app/features/notifications/domain/repositories/notification_repository.dart';
+import 'package:fresh_bond_app/features/token_economy/domain/blocs/achievement_bloc.dart';
+import 'package:fresh_bond_app/features/token_economy/domain/blocs/token_bloc.dart';
+import 'package:fresh_bond_app/features/token_economy/domain/repositories/achievement_repository.dart';
+import 'package:fresh_bond_app/features/token_economy/domain/repositories/token_repository.dart';
 import 'package:fresh_bond_app/firebase_options.dart';
 
 void main() async {
@@ -58,6 +64,22 @@ void main() async {
         BlocProvider<NfcVerificationBloc>(
           create: (context) => NfcVerificationBloc(
             nfcRepository: ServiceLocator.getIt<NfcVerificationRepositoryInterface>(),
+          ),
+        ),
+        BlocProvider<NotificationBloc>(
+          create: (context) => NotificationBloc(
+            notificationRepository: ServiceLocator.getIt<NotificationRepository>(),
+            logger: ServiceLocator.getIt.get<AppLogger>()
+          ),
+        ),
+        BlocProvider<TokenBloc>(
+          create: (context) => TokenBloc(
+            tokenRepository: ServiceLocator.getIt<TokenRepository>(),
+          ),
+        ),
+        BlocProvider<AchievementBloc>(
+          create: (context) => AchievementBloc(
+            achievementRepository: ServiceLocator.getIt<AchievementRepository>(),
           ),
         ),
       ],

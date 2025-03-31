@@ -49,6 +49,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToMessages() {
     context.go('/messages');
   }
+  
+  void _navigateToTokenWallet() {
+    context.go('/tokens');
+  }
+  
+  void _navigateToAchievements() {
+    context.go('/achievements');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,6 +168,47 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: BondSpacing.lg),
+              
+              // Token Economy cards
+              Text(
+                'Token Economy',
+                style: BondTypography.heading2,
+              ),
+              const SizedBox(height: BondSpacing.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTokenEconomyCard(
+                      title: 'Bond Tokens',
+                      icon: Icons.token,
+                      value: '125',
+                      subtitle: 'Current Balance',
+                      onTap: _navigateToTokenWallet,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: BondSpacing.md),
+                  Expanded(
+                    child: _buildTokenEconomyCard(
+                      title: 'Achievements',
+                      icon: Icons.emoji_events,
+                      value: '3/12',
+                      subtitle: 'Completed',
+                      onTap: _navigateToAchievements,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFF53844), Color(0xFFFF7676)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: BondSpacing.lg),
               
@@ -375,6 +424,76 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+  
+  Widget _buildTokenEconomyCard({
+    required String title,
+    required IconData icon,
+    required String value,
+    required String subtitle,
+    required VoidCallback onTap,
+    required Gradient gradient,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(BondSpacing.md),
+      child: Container(
+        height: 140,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(BondSpacing.md),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(BondSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 28,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
